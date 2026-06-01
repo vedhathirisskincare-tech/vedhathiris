@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-skin-bg: #e0dafa;
+  --color-skin-primary: #c2a4fc;
+  --color-skin-bold: #3c094c;
+  --color-skin-white: #FFFFFF;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+body {
+  background-color: var(--color-skin-bg);
+  color: var(--color-skin-primary);
+}
