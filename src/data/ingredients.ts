@@ -1,0 +1,751 @@
+export interface Ingredient {
+  id: string;
+  name: string;
+  scientificName: string;
+  category: 'Oils' | 'Butters' | 'Clays' | 'Powders' | 'Grains' | 'Luxury' | 'Essential Oils' | 'Herbs';
+  description: string;
+  benefits: string[];
+  skinTypes: ('Dry' | 'Oily' | 'Sensitive' | 'Acne-Prone' | 'Dull' | 'Mature' | 'Normal' | 'Combination')[];
+  properties: string[];
+  emoji: string;
+}
+
+export const INGREDIENTS: Ingredient[] = [
+  {
+    id: "coconut-oil",
+    name: "Coconut Oil",
+    scientificName: "Cocos Nucifera",
+    category: "Oils",
+    description: "The cornerstone of organic soap making. It creates a rich, fluffy, and abundant lather while providing exceptional cleansing properties.",
+    benefits: ["Deep Cleansing", "Highly Lathering", "Antimicrobial"],
+    skinTypes: ["Normal", "Oily"],
+    properties: ["Cleansing", "Protective", "Antibacterial"],
+    emoji: "🥥"
+  },
+  {
+    id: "castor-oil",
+    name: "Castor Oil",
+    scientificName: "Ricinus Communis",
+    category: "Oils",
+    description: "A thick, nutrient-dense oil that acts as a natural humectant, drawing moisture to the skin and creating a creamy, stable bubble lather.",
+    benefits: ["Creamy Lather", "Moisture-Retaining", "Soothing"],
+    skinTypes: ["Dry", "Sensitive"],
+    properties: ["Humectant", "Hydrating", "Conditioning"],
+    emoji: "🌱"
+  },
+  {
+    id: "olive-oil",
+    name: "Olive Oil",
+    scientificName: "Olea Europaea",
+    category: "Oils",
+    description: "Highly conditioning and rich in vitamins A and E. In soaps, it creates a mild, creamy lather that is incredibly gentle on delicate skin.",
+    benefits: ["Antioxidant-Rich", "Intensely Hydrating", "Ultra-Gentle"],
+    skinTypes: ["Dry", "Sensitive", "Normal"],
+    properties: ["Nourishing", "Hydrating", "Antioxidant"],
+    emoji: "🫒"
+  },
+  {
+    id: "safflower-oil",
+    name: "Safflower Oil",
+    scientificName: "Carthamus Tinctorius",
+    category: "Oils",
+    description: "A light, non-greasy oil high in linoleic acid, which helps soothe irritated skin and improve skin texture without clogging pores.",
+    benefits: ["Non-Comedogenic", "Barrier-Repairing", "Skin-Softening"],
+    skinTypes: ["Sensitive", "Acne-Prone", "Oily"],
+    properties: ["Soothing", "Lightweight", "Smoothing"],
+    emoji: "🌻"
+  },
+  {
+    id: "almond-oil",
+    name: "Almond Oil",
+    scientificName: "Prunus Amygdalus Dulcis",
+    category: "Oils",
+    description: "A nourishing oil loaded with Vitamin E and fatty acids that softens the skin, improves tone, and restores natural radiance.",
+    benefits: ["Deeply Softening", "Improves Skin Tone", "Restorative"],
+    skinTypes: ["Dry", "Sensitive", "Normal"],
+    properties: ["Nourishing", "Softening", "Vitamin E-Rich"],
+    emoji: "🥜"
+  },
+  {
+    id: "jojoba-oil",
+    name: "Jojoba Oil",
+    scientificName: "Simmondsia Chinensis",
+    category: "Oils",
+    description: "A liquid wax that closely mimics the skin's natural sebum, helping to balance oil production and lock in deep moisture.",
+    benefits: ["Sebum-Balancing", "Deeply Hydrating", "Anti-inflammatory"],
+    skinTypes: ["Oily", "Combination", "Acne-Prone", "Normal"],
+    properties: ["Balancing", "Hydrating", "Non-Comedogenic"],
+    emoji: "🌿"
+  },
+  {
+    id: "sesame-oil",
+    name: "Sesame Oil",
+    scientificName: "Sesamum Indicum",
+    category: "Oils",
+    description: "A traditional Ayurvedic oil packed with zinc and antioxidants, providing excellent warming, protective, and skin-detoxifying benefits.",
+    benefits: ["Detoxifying", "Warming Experience", "Antioxidant Shield"],
+    skinTypes: ["Dry", "Normal", "Mature"],
+    properties: ["Detoxifying", "Warming", "Shielding"],
+    emoji: "🫘"
+  },
+  {
+    id: "mango-butter",
+    name: "Mango Butter",
+    scientificName: "Mangifera Indica",
+    category: "Butters",
+    description: "A luxurious, non-greasy butter rich in vitamins A, C, and E that deeply moisturizes the skin and helps boost elasticity.",
+    benefits: ["Elasticity-Boosting", "Non-Greasy Hydration", "Softening"],
+    skinTypes: ["Dry", "Sensitive", "Normal"],
+    properties: ["Softening", "Elasticity", "Vitamin-Rich"],
+    emoji: "🥭"
+  },
+  {
+    id: "cocoa-butter",
+    name: "Cocoa Butter",
+    scientificName: "Theobroma Cacao",
+    category: "Butters",
+    description: "A rich, creamy butter that forms a protective barrier over the skin to lock in moisture and gives soaps a hard, long-lasting bar quality.",
+    benefits: ["Barrier Protection", "Moisture-Locking", "Rich Hydration"],
+    skinTypes: ["Dry", "Normal", "Mature"],
+    properties: ["Moisture-Locking", "Protecting", "Firming"],
+    emoji: "🍫"
+  },
+  {
+    id: "kokum-butter",
+    name: "Kokum Butter",
+    scientificName: "Garcinia Indica",
+    category: "Butters",
+    description: "A rare, highly prized butter from India that supports skin cell regeneration and absorbs quickly without clogging pores.",
+    benefits: ["Cell-Regenerating", "Non-Comedogenic", "Deeply Healing"],
+    skinTypes: ["Dry", "Sensitive", "Acne-Prone"],
+    properties: ["Regenerating", "Healing", "Soothing"],
+    emoji: "🌰"
+  },
+  {
+    id: "green-clay",
+    name: "Green Clay",
+    scientificName: "Montmorillonite",
+    category: "Clays",
+    description: "A mineral-rich clay that gently draws out toxins, absorbs excess oil, and tightens pores for a refined, clarified complexion.",
+    benefits: ["Deeply Detoxifying", "Pore-Refining", "Sebum Control"],
+    skinTypes: ["Oily", "Acne-Prone"],
+    properties: ["Detoxifying", "Clarifying", "Oil-Absorbing"],
+    emoji: "🧱"
+  },
+  {
+    id: "pink-clay",
+    name: "Pink Clay",
+    scientificName: "Kaolin / Illite",
+    category: "Clays",
+    description: "A gentle blend of red and white clays that boosts skin circulation, refines texture, and provides mild exfoliation without drying.",
+    benefits: ["Gentle Exfoliation", "Skin Brightening", "Soothing Relief"],
+    skinTypes: ["Sensitive", "Dry", "Normal"],
+    properties: ["Exfoliating", "Brightening", "Circulation-Boosting"],
+    emoji: "🌸"
+  },
+  {
+    id: "kaolin-clay",
+    name: "Kaolin Clay",
+    scientificName: "Kaolinite",
+    category: "Clays",
+    description: "The mildest of all clays, it gently cleanses, improves skin circulation, and adds a silky-smooth slip to soaps.",
+    benefits: ["Ultra-Gentle Cleansing", "Softening Action", "Soothing Texture"],
+    skinTypes: ["Sensitive", "Dry", "Normal"],
+    properties: ["Gentle", "Cleansing", "Soothing"],
+    emoji: "🥚"
+  },
+  {
+    id: "bamboo-charcoal",
+    name: "Bamboo Charcoal Powder",
+    scientificName: "Activated Carbon",
+    category: "Clays",
+    description: "A powerful natural purifier that acts like a magnet to lift impurities, dirt, and excess oil from deep within the pores.",
+    benefits: ["Deep Purifying", "Pore Clarifying", "Odor-Absorbing"],
+    skinTypes: ["Oily", "Acne-Prone"],
+    properties: ["Purifying", "Clarifying", "Deep-Cleansing"],
+    emoji: "🖤"
+  },
+  {
+    id: "orange-peel",
+    name: "Orange Peel Powder",
+    scientificName: "Citrus Aurantium",
+    category: "Powders",
+    description: "Packed with Vitamin C and natural AHAs, this powder brightens skin tone, fights free radicals, and offers a refreshing, gentle scrub.",
+    benefits: ["Skin Brightening", "Vitamin C-Rich", "Gentle Scrub"],
+    skinTypes: ["Normal", "Dull", "Oily"],
+    properties: ["Brightening", "Antioxidant", "Exfoliating"],
+    emoji: "🍊"
+  },
+  {
+    id: "manjistha-root",
+    name: "Manjistha Root Powder",
+    scientificName: "Rubia Cordifolia",
+    category: "Powders",
+    description: "A revered Ayurvedic herb that purifies skin locally, reduces pigmentation, and evens out skin tone, leaving a healthy glow.",
+    benefits: ["Pigmentation-Reducing", "Skin-Evening", "Ayurvedic Detox"],
+    skinTypes: ["Normal", "Acne-Prone", "Dull"],
+    properties: ["Detoxifying", "Even-Tone", "Healing"],
+    emoji: "🍁"
+  },
+  {
+    id: "rose-petals",
+    name: "Rose Petals Powder",
+    scientificName: "Rosa Centifolia",
+    category: "Powders",
+    description: "A cooling, aromatic powder that calms skin inflammation, tones the skin, and infuses it with natural hydration and a delicate scent.",
+    benefits: ["Toning & Tightening", "Cooling Relief", "Anti-inflammatory"],
+    skinTypes: ["Sensitive", "Dry", "Mature"],
+    properties: ["Toning", "Soothing", "Aromatic"],
+    emoji: "🌹"
+  },
+  {
+    id: "carrot-powder",
+    name: "Carrot Powder",
+    scientificName: "Daucus Carota Sativa",
+    category: "Powders",
+    description: "Rich in beta-carotene and Vitamin A, it boosts cell regeneration, improves skin elasticity, and protects against environmental stress.",
+    benefits: ["Beta-Carotene Rich", "Anti-Aging Effect", "Regenerating"],
+    skinTypes: ["Mature", "Dry", "Normal"],
+    properties: ["Antioxidant", "Regenerating", "Protecting"],
+    emoji: "🥕"
+  },
+  {
+    id: "papaya-powder",
+    name: "Papaya Powder",
+    scientificName: "Carica Papaya",
+    category: "Powders",
+    description: "Contains papain, a natural enzyme that gently breaks down dead skin cells, helping to resurface, smooth, and brighten the skin.",
+    benefits: ["Enzymatic Exfoliation", "Skin Resurfacing", "Brightening"],
+    skinTypes: ["Dull", "Acne-Prone", "Normal"],
+    properties: ["Exfoliating", "Brightening", "Enzymatic"],
+    emoji: "🥭"
+  },
+  {
+    id: "beetroot-powder",
+    name: "Beetroot Powder",
+    scientificName: "Beta Vulgaris",
+    category: "Powders",
+    description: "Loaded with antioxidants and nitrates, it revitalizes skin cells, promotes a rosy glow, and acts as a beautiful natural colorant.",
+    benefits: ["Rosy Glow", "Antioxidant-Rich", "Cell Revitalizing"],
+    skinTypes: ["Normal", "Dry", "Dull"],
+    properties: ["Revitalizing", "Antioxidant", "Coloring"],
+    emoji: "🍠"
+  },
+  {
+    id: "tomato-powder",
+    name: "Tomato Powder",
+    scientificName: "Solanum Lycopersicum",
+    category: "Powders",
+    description: "High in lycopene and natural acids, it helps tighten large pores, balance excess oil, and protect the skin from environmental stressors.",
+    benefits: ["Pore Tightening", "Lycopene Shield", "Oil Balancing"],
+    skinTypes: ["Oily", "Normal"],
+    properties: ["Pore-Refining", "Balancing", "Antioxidant"],
+    emoji: "🍅"
+  },
+  {
+    id: "potato-powder",
+    name: "Potato Powder",
+    scientificName: "Solanum Tuberosum",
+    category: "Powders",
+    description: "Highly effective for reducing dark spots, hyperpigmentation, and under-eye dark circles due to its natural brightening enzymes.",
+    benefits: ["Spot Fading", "Natural Brightening", "Soothing Relief"],
+    skinTypes: ["Dull", "Normal"],
+    properties: ["Brightening", "Soothing", "Clarifying"],
+    emoji: "🥔"
+  },
+  {
+    id: "neem-powder",
+    name: "Neem Powder",
+    scientificName: "Azadirachta Indica",
+    category: "Powders",
+    description: "A legendary antibacterial and antifungal herb that calms breakouts, treats skin infections, and purifies acne-prone skin.",
+    benefits: ["Antibacterial Shield", "Anti-Acne Purifying", "Soothing"],
+    skinTypes: ["Acne-Prone", "Sensitive", "Oily"],
+    properties: ["Purifying", "Antibacterial", "Calming"],
+    emoji: "🍃"
+  },
+  {
+    id: "green-gram",
+    name: "Green Gram Powder",
+    scientificName: "Vigna Radiata",
+    category: "Powders",
+    description: "A traditional Indian cleanser (Mung bean) that gently scrubs away dead skin cells without stripping natural oils.",
+    benefits: ["Gentle Exfoliation", "Natural Cleansing", "Softening Action"],
+    skinTypes: ["Sensitive", "Normal", "Dry"],
+    properties: ["Cleansing", "Smoothing", "Exfoliating"],
+    emoji: "🟢"
+  },
+  {
+    id: "rice",
+    name: "Rice",
+    scientificName: "Oryza Sativa",
+    category: "Grains",
+    description: "Whole grain particles that provide structured, manual exfoliation to polish skin texture, buffing away dry, dead skin.",
+    benefits: ["Skin Polishing", "Texture Refining", "Brightening Action"],
+    skinTypes: ["Normal", "Dry"],
+    properties: ["Exfoliating", "Smoothing", "Brightening"],
+    emoji: "🌾"
+  },
+  {
+    id: "rice-starch",
+    name: "Rice Starch",
+    scientificName: "Oryza Sativa Starch",
+    category: "Grains",
+    description: "A silky, ultra-fine starch that absorbs excess oil, calms irritated skin, and creates a soft, matte skin feel.",
+    benefits: ["Soothing Calmer", "Oil Absorption", "Silky Softness"],
+    skinTypes: ["Sensitive", "Oily", "Normal"],
+    properties: ["Soothing", "Oil-Absorbing", "Softening"],
+    emoji: "🍚"
+  },
+  {
+    id: "corn",
+    name: "Corn",
+    scientificName: "Zea Mays",
+    category: "Grains",
+    description: "Natural corn grits that offer a robust, invigorating scrub, perfect for smoothing rough areas like elbows and feet.",
+    benefits: ["Robust Scrub", "Invigorating Feel", "Deep Smoothing"],
+    skinTypes: ["Normal", "Dry"],
+    properties: ["Deep Exfoliating", "Invigorating", "Rough-Skin Softener"],
+    emoji: "🌽"
+  },
+  {
+    id: "corn-starch",
+    name: "Corn Starch",
+    scientificName: "Zea Mays Starch",
+    category: "Grains",
+    description: "Adds a silky, powdery finish to products, helping to soothe itchiness and calm rashes while absorbing excess sweat.",
+    benefits: ["Rashes Soothing", "Sweat-Absorbing", "Silky Finish"],
+    skinTypes: ["Sensitive", "Normal"],
+    properties: ["Calming", "Absorbent", "Smoothing"],
+    emoji: "🥣"
+  },
+  {
+    id: "oats",
+    name: "Oats",
+    scientificName: "Avena Sativa",
+    category: "Grains",
+    description: "Renowned for its skin-calming properties, colloidal oats protect the skin barrier, relieve itching, and gently moisturize.",
+    benefits: ["Anti-Itch Relief", "Barrier Protecting", "Deeply Soothing"],
+    skinTypes: ["Sensitive", "Dry"],
+    properties: ["Barrier-Repairing", "Soothing", "Humectant"],
+    emoji: "🥣"
+  },
+  {
+    id: "besan",
+    name: "Besan",
+    scientificName: "Cicer Arietinum",
+    category: "Grains",
+    description: "A classic beauty staple in India (Gram Flour) that deeply cleanses, absorbs oil, and helps reduce fine facial hair over time.",
+    benefits: ["Deep Cleansing", "Excess Oil Absorption", "Brightening"],
+    skinTypes: ["Oily", "Normal", "Combination"],
+    properties: ["Cleansing", "Brightening", "Exfoliating"],
+    emoji: "🌾"
+  },
+  {
+    id: "licorice",
+    name: "Licorice",
+    scientificName: "Glycyrrhiza Glabra",
+    category: "Grains",
+    description: "Contains glabridin, a powerful compound that inhibits melanin production, making it a highly effective natural skin brightener.",
+    benefits: ["Melanin-Inhibiting", "Fades Dark Spots", "Skin Brightening"],
+    skinTypes: ["Dull", "Normal", "Sensitive"],
+    properties: ["Brightening", "Soothing", "Anti-Aging"],
+    emoji: "🪵"
+  },
+  {
+    id: "coffee",
+    name: "Coffee",
+    scientificName: "Coffea Arabica",
+    category: "Grains",
+    description: "Finely ground coffee beans provide physical exfoliation while natural caffeine tightens skin, boosts circulation, and reduces puffiness.",
+    benefits: ["Stimulating Exfoliation", "Circulation Boosting", "Skin Firming"],
+    skinTypes: ["Normal", "Dull"],
+    properties: ["Firming", "Circulation-Boosting", "Exfoliating"],
+    emoji: "☕"
+  },
+  {
+    id: "camel-milk",
+    name: "Camel Milk Powder",
+    scientificName: "Camel Lac",
+    category: "Luxury",
+    description: "A rare, luxurious milk high in lactic acid, elastin, and protective proteins that moisturizes and gently resurfaces the skin.",
+    benefits: ["Lactic Acid-Rich", "Anti-Aging Lift", "Intensified Nourishment"],
+    skinTypes: ["Dry", "Sensitive", "Mature"],
+    properties: ["Smoothing", "Nourishing", "Restorative"],
+    emoji: "🐫"
+  },
+  {
+    id: "saffron",
+    name: "Saffron",
+    scientificName: "Crocus Sativus",
+    category: "Luxury",
+    description: "The world's most precious spice, containing crocin which provides immense antioxidant power, boosts cell repair, and imparts a golden glow.",
+    benefits: ["Glow-Enhancing", "Cell-Repairing Boost", "Antioxidant Richness"],
+    skinTypes: ["Dull", "Mature", "Normal", "Sensitive"],
+    properties: ["Glow-Promoting", "Antioxidant", "Luxurious"],
+    emoji: "🪡"
+  },
+  {
+    id: "red-sandal",
+    name: "Red Sandal Powder",
+    scientificName: "Pterocarpus Santalinus",
+    category: "Powders",
+    description: "Also known as Rakta Chandan, it heals acne, lightens scars, cools sunburns, and evens out skin tone.",
+    benefits: ["Scar Lightening", "Sunburn Cooling", "Anti-Acne Purifying"],
+    skinTypes: ["Acne-Prone", "Sensitive", "Normal"],
+    properties: ["Cooling", "Scar-Healing", "Soothing"],
+    emoji: "🪵"
+  },
+  {
+    id: "sandalwood",
+    name: "Sandalwood",
+    scientificName: "Santalum Album",
+    category: "Powders",
+    description: "Highly cooling and aromatic, it is known for its skin-smoothing, antiseptic, and toning properties, with an iconic woody scent.",
+    benefits: ["Skin Smoothing", "Natural Antiseptic", "Calming Aroma"],
+    skinTypes: ["Sensitive", "Normal", "Dry", "Mature"],
+    properties: ["Cooling", "Antiseptic", "Aromatic"],
+    emoji: "🪵"
+  },
+  {
+    id: "rose-essential-oil",
+    name: "Rose Essential Oil",
+    scientificName: "Rosa Damascena",
+    category: "Essential Oils",
+    description: "An exquisite, steam-distilled oil that hydrates dry skin, calms redness, and offers an uplifting aromatherapeutic experience.",
+    benefits: ["Uplifting Aroma", "Calms Redness", "Hydrates Dryness"],
+    skinTypes: ["Dry", "Mature", "Sensitive"],
+    properties: ["Aromatherapeutic", "Hydrating", "Regenerating"],
+    emoji: "🌹"
+  },
+  {
+    id: "neem-essential-oil",
+    name: "Neem Essential Oil",
+    scientificName: "Azadirachta Indica Oil",
+    category: "Essential Oils",
+    description: "A highly concentrated antiseptic and healing oil that treats chronic skin conditions, insect bites, and intense acne.",
+    benefits: ["Concentrated Antiseptic", "Deep Acne Care", "Skin Healing"],
+    skinTypes: ["Acne-Prone", "Oily"],
+    properties: ["Antiseptic", "Healing", "Clarifying"],
+    emoji: "🍃"
+  },
+  {
+    id: "lotus-essential-oil",
+    name: "Lotus Essential Oil",
+    scientificName: "Nelumbo Nucifera",
+    category: "Essential Oils",
+    description: "A sacred oil that improves skin elasticity, deeply conditions, and provides a calming, meditative scent to clear the mind.",
+    benefits: ["Improves Elasticity", "Deep Conditioning", "Meditative Aroma"],
+    skinTypes: ["Normal", "Dry", "Mature"],
+    properties: ["Conditioning", "Aromatic", "Firming"],
+    emoji: "🪷"
+  },
+  {
+    id: "geranium-essential-oil",
+    name: "Geranium Essential Oil",
+    scientificName: "Pelargonium Graveolens",
+    category: "Essential Oils",
+    description: "Balances sebum production, improves skin elasticity, and promotes cell recycling, wrapped in a sweet floral scent.",
+    benefits: ["Sebum Balancing", "Floral Aroma", "Skin Firming"],
+    skinTypes: ["Normal", "Oily", "Combination", "Mature"],
+    properties: ["Balancing", "Aromatic", "Tightening"],
+    emoji: "🌸"
+  },
+  {
+    id: "tulsi",
+    name: "Tulsi",
+    scientificName: "Ocimum Tenuiflorum",
+    category: "Herbs",
+    description: "An aromatic sacred herb in Ayurveda that purifies the scalp, fights infections, and promotes healthy hair growth.",
+    benefits: ["Purifies scalp", "Fights infections", "Promotes healthy hair"],
+    skinTypes: ["Normal", "Sensitive", "Oily"],
+    properties: ["Purifying", "Anti-bacterial", "Soothing"],
+    emoji: "🌿"
+  },
+  {
+    id: "betel-leaves",
+    name: "Betel Leaves",
+    scientificName: "Piper Betle",
+    category: "Herbs",
+    description: "Fresh betel leaves that contain anti-inflammatory and antiseptic properties, helping to strengthen hair roots and maintain scalp health.",
+    benefits: ["Strengthens hair roots", "Keeps scalp healthy", "Reduces itchiness"],
+    skinTypes: ["Normal", "Dry", "Oily"],
+    properties: ["Antiseptic", "Strengthening", "Soothing"],
+    emoji: "🍃"
+  },
+  {
+    id: "curry-leaves",
+    name: "Curry Leaves",
+    scientificName: "Murraya Koenigii",
+    category: "Herbs",
+    description: "Rich in beta-carotene and proteins, curry leaves nourish hair follicles, prevent premature greying, and support overall hair health.",
+    benefits: ["Nourishes follicles", "Prevents premature greying", "Reduces hair fall"],
+    skinTypes: ["Normal", "Dry", "Dull"],
+    properties: ["Nourishing", "Anti-greying", "Stimulating"],
+    emoji: "🌿"
+  },
+  {
+    id: "karpooravalli",
+    name: "Karpooravalli",
+    scientificName: "Plectranthus Amboinicus",
+    category: "Herbs",
+    description: "Also known as Indian Borage, this aromatic herb relieves scalp irritation, prevents dandruff, and promotes healthy hair growth.",
+    benefits: ["Relieves scalp irritation", "Prevents dandruff", "Promotes healthy hair growth"],
+    skinTypes: ["Sensitive", "Acne-Prone", "Oily"],
+    properties: ["Calming", "Anti-dandruff", "Healing"],
+    emoji: "🌱"
+  },
+  {
+    id: "lavender",
+    name: "Lavender Essential Oil",
+    scientificName: "Lavandula Angustifolia",
+    category: "Essential Oils",
+    description: "A soothing essential oil that calms the scalp, reduces itchiness, and infuses hair with a relaxing natural fragrance.",
+    benefits: ["Soothes scalp", "Reduces itchiness", "Relaxing fragrance"],
+    skinTypes: ["Normal", "Sensitive", "Dry", "Mature"],
+    properties: ["Soothing", "Aromatic", "Calming"],
+    emoji: "🪻"
+  },
+  {
+    id: "rosemary",
+    name: "Rosemary Essential Oil",
+    scientificName: "Salvia Rosmarinus",
+    category: "Essential Oils",
+    description: "A powerful aromatic oil that stimulates blood circulation in the scalp, encourages hair growth, and strengthens follicles.",
+    benefits: ["Improves scalp circulation", "Encourages hair growth", "Strengthens follicles"],
+    skinTypes: ["Normal", "Oily", "Mature"],
+    properties: ["Stimulating", "Strengthening", "Aromatic"],
+    emoji: "🌿"
+  },
+  {
+    id: "argan-oil",
+    name: "Argan Oil",
+    scientificName: "Argania Spinosa",
+    category: "Oils",
+    description: "Liquid gold from Morocco. Rich in fatty acids and vitamin E, it deeply moisturizes hair, tames frizz, and adds a brilliant shine.",
+    benefits: ["Deeply moisturizes", "Tames frizz", "Adds brilliant shine"],
+    skinTypes: ["Dry", "Normal", "Mature"],
+    properties: ["Nourishing", "Shine-boosting", "Softening"],
+    emoji: "🫘"
+  },
+  {
+    id: "avocado-oil",
+    name: "Avocado Oil",
+    scientificName: "Persea Gratissima",
+    category: "Oils",
+    description: "An extremely rich, penetrative oil high in monounsaturated fatty acids that repairs dry, damaged hair shafts and strengthens the hair barrier.",
+    benefits: ["Repairs damage", "Strengthens hair shafts", "Deeply nourishing"],
+    skinTypes: ["Dry", "Sensitive", "Mature"],
+    properties: ["Nourishing", "Barrier-repairing", "Softening"],
+    emoji: "🥑"
+  },
+  {
+    id: "jadamanji",
+    name: "Jadamanji",
+    scientificName: "Nardostachys Jatamansi",
+    category: "Herbs",
+    description: "A revered Ayurvedic herb known for promoting hair growth, cooling the scalp, and soothing the nervous system to support deep relaxation.",
+    benefits: ["Promotes hair growth", "Cools the scalp", "Soothing relaxation"],
+    skinTypes: ["Normal", "Sensitive", "Dry"],
+    properties: ["Cooling", "Stimulating", "Calming"],
+    emoji: "🌾"
+  },
+  {
+    id: "avuri",
+    name: "Avuri",
+    scientificName: "Indigofera Tinctoria",
+    category: "Herbs",
+    description: "A traditional Ayurvedic herb used to prevent premature greying, promote hair thickness, and impart natural dark shine to hair.",
+    benefits: ["Prevents premature greying", "Improves hair thickness", "Imparts dark shine"],
+    skinTypes: ["Normal", "Dry"],
+    properties: ["Anti-greying", "Conditioning", "Strengthening"],
+    emoji: "🌱"
+  },
+  {
+    id: "tea-tree-oil",
+    name: "Tea Tree Essential Oil",
+    scientificName: "Melaleuca Alternifolia",
+    category: "Essential Oils",
+    description: "A purifying essential oil with powerful anti-fungal and anti-bacterial properties that treats dandruff, clears hair follicles, and balances sebum.",
+    benefits: ["Treats dandruff", "Clears hair follicles", "Balances sebum"],
+    skinTypes: ["Oily", "Acne-Prone", "Sensitive"],
+    properties: ["Purifying", "Anti-fungal", "Balancing"],
+    emoji: "🌿"
+  },
+  {
+    id: "garlic",
+    name: "Garlic",
+    scientificName: "Allium Sativum",
+    category: "Herbs",
+    description: "Allicin-rich herb that improves blood circulation, purifies the scalp, and stimulates dormant hair follicles for robust hair growth.",
+    benefits: ["Stimulates hair follicles", "Improves circulation", "Scalp purifying"],
+    skinTypes: ["Normal", "Oily"],
+    properties: ["Purifying", "Circulation-boosting", "Stimulating"],
+    emoji: "🧄"
+  },
+  {
+    id: "onion",
+    name: "Onion",
+    scientificName: "Allium Cepa",
+    category: "Herbs",
+    description: "High in sulfur, onion extract nourishes hair follicles, promotes collagen production, reduces hair breakage, and prevents hair fall.",
+    benefits: ["Reduces hair breakage", "Promotes collagen production", "Nourishes follicles"],
+    skinTypes: ["Normal", "Dry"],
+    properties: ["Nourishing", "Sulfur-rich", "Strengthening"],
+    emoji: "🧅"
+  },
+  {
+    id: "aloe-vera",
+    name: "Aloe Vera",
+    scientificName: "Aloe Barbadensis",
+    category: "Herbs",
+    description: "Rich in proteolytic enzymes, vitamins, and minerals that soothe the scalp, deeply hydrate hair shafts, and restore natural shine.",
+    benefits: ["Soothes scalp irritation", "Deeply hydrates hair", "Restores natural shine"],
+    skinTypes: ["Sensitive", "Dry", "Normal"],
+    properties: ["Soothing", "Hydrating", "Enzymatic"],
+    emoji: "🪴"
+  },
+  {
+    id: "pomegranate",
+    name: "Pomegranate Extract",
+    scientificName: "Punica Granatum",
+    category: "Herbs",
+    description: "Packed with antioxidants and punicic acid, pomegranate extract strengthens hair follicles, protects against environmental stress, and enhances hair elasticity.",
+    benefits: ["Strengthens hair follicles", "Antioxidant shield", "Enhances elasticity"],
+    skinTypes: ["Normal", "Mature"],
+    properties: ["Antioxidant", "Strengthening", "Revitalizing"],
+    emoji: "🍅"
+  },
+  {
+    id: "clove",
+    name: "Clove",
+    scientificName: "Syzygium Aromaticum",
+    category: "Herbs",
+    description: "Stimulates scalp circulation, fights scalp infections with eugenol, and helps prevent premature hair thinning.",
+    benefits: ["Fights scalp infections", "Prevents hair thinning", "Stimulates circulation"],
+    skinTypes: ["Normal", "Oily"],
+    properties: ["Antiseptic", "Stimulating", "Aromatic"],
+    emoji: "🌱"
+  },
+  {
+    id: "fenugreek",
+    name: "Fenugreek",
+    scientificName: "Trigonella Foenum-graecum",
+    category: "Herbs",
+    description: "A rich source of nicotinic acid and lecithin, fenugreek seeds treat scalp dryness, fight dandruff, and promote glossy, voluminous hair.",
+    benefits: ["Treats scalp dryness", "Fights dandruff", "Boosts volume & shine"],
+    skinTypes: ["Dry", "Normal", "Sensitive"],
+    properties: ["Conditioning", "Anti-dandruff", "Nourishing"],
+    emoji: "🌿"
+  },
+  {
+    id: "hibiscus",
+    name: "Hibiscus Leaves & Flower",
+    scientificName: "Hibiscus Rosa-Sinensis",
+    category: "Herbs",
+    description: "Infused with amino acids and natural mucilage, hibiscus conditions hair naturally, prevents premature greying, and treats split ends.",
+    benefits: ["Natural conditioning", "Prevents premature greying", "Treats split ends"],
+    skinTypes: ["Normal", "Dry", "Dull"],
+    properties: ["Conditioning", "Anti-greying", "Softening"],
+    emoji: "🌺"
+  },
+  {
+    id: "kalonji",
+    name: "Kalonji Seeds",
+    scientificName: "Nigella Sativa",
+    category: "Herbs",
+    description: "Black seed extract rich in thymoquinone that reduces hair thinning, relieves dry scalp, and keeps hair healthy and nourished.",
+    benefits: ["Reduces hair thinning", "Relieves dry scalp", "Deeply nourishes hair"],
+    skinTypes: ["Dry", "Sensitive"],
+    properties: ["Nourishing", "Anti-inflammatory", "Strengthening"],
+    emoji: "🌾"
+  },
+  {
+    id: "black-pepper",
+    name: "Black Pepper",
+    scientificName: "Piper Nigrum",
+    category: "Herbs",
+    description: "Clears dead skin cells and build-up from the scalp, stimulates hair follicles, and promotes nutrient absorption with piperine.",
+    benefits: ["Clears scalp build-up", "Stimulates hair follicles", "Promotes nutrient absorption"],
+    skinTypes: ["Oily", "Normal"],
+    properties: ["Stimulating", "Exfoliating", "Purifying"],
+    emoji: "🌱"
+  },
+  {
+    id: "keratin",
+    name: "Keratin Protein",
+    scientificName: "Hydrolyzed Keratin",
+    category: "Luxury",
+    description: "Hydrolyzed protein that penetrates the hair shaft to repair structural damage, restore strength, tame frizz, and build a protective barrier.",
+    benefits: ["Repairs structural damage", "Restores hair strength", "Tames frizz"],
+    skinTypes: ["Dry", "Mature", "Normal"],
+    properties: ["Repairing", "Strengthening", "Barrier-building"],
+    emoji: "✨"
+  },
+  {
+    id: "coconut-cleanser",
+    name: "Coconut Derived Cleanser",
+    scientificName: "Sodium Cocoyl Isethionate",
+    category: "Luxury",
+    description: "A very mild, biodegradable surfactant derived from coconut fatty acids that cleanses gently without stripping the hair's natural oils.",
+    benefits: ["Mild & gentle cleansing", "Sulfate-free lather", "Biodegradable"],
+    skinTypes: ["Sensitive", "Normal", "Dry"],
+    properties: ["Cleansing", "Sulfate-Free", "Gentle"],
+    emoji: "🥥"
+  },
+  {
+    id: "milk-protein",
+    name: "Milk Protein",
+    scientificName: "Hydrolyzed Milk Protein",
+    category: "Luxury",
+    description: "Rich in casein and whey, it deeply nourishes the hair follicles, improves hair volume, and imparts a silky, soft texture to hair.",
+    benefits: ["Nourishes hair follicles", "Improves hair volume", "Imparts silky texture"],
+    skinTypes: ["Dry", "Sensitive"],
+    properties: ["Nourishing", "Smoothing", "Softening"],
+    emoji: "🥛"
+  },
+  {
+    id: "vitamin-e",
+    name: "Vitamin E",
+    scientificName: "Tocopherol",
+    category: "Luxury",
+    description: "A potent antioxidant that protects hair shafts from oxidative stress, repairs damaged hair follicles, and promotes healthy growth.",
+    benefits: ["Protects from oxidative stress", "Repairs damaged follicles", "Promotes healthy growth"],
+    skinTypes: ["Normal", "Dry", "Sensitive"],
+    properties: ["Antioxidant", "Repairing", "Conditioning"],
+    emoji: "💊"
+  },
+  {
+    id: "vitamin-b5",
+    name: "Pro Vitamin B5",
+    scientificName: "Panthenol",
+    category: "Luxury",
+    description: "Humectant that deeply moisturizes the hair shaft, increases hair elasticity, improves manageability, and prevents split ends.",
+    benefits: ["Deeply moisturizes hair", "Increases hair elasticity", "Prevents split ends"],
+    skinTypes: ["Dry", "Sensitive", "Normal"],
+    properties: ["Humectant", "Elasticity", "Smoothing"],
+    emoji: "💧"
+  },
+  {
+    id: "herbal-blend",
+    name: "Herbal & Botanical Extract Blend",
+    scientificName: "Botanical Extracts",
+    category: "Herbs",
+    description: "A synergistic blend of handpicked herbs designed to promote scalp rejuvenation, strengthen hair shafts, and keep hair full of vitality.",
+    benefits: ["Scalp rejuvenation", "Strengthens hair shafts", "Boosts vitality"],
+    skinTypes: ["Normal", "Sensitive"],
+    properties: ["Rejuvenating", "Strengthening", "Vitality"],
+    emoji: "🌿"
+  },
+  {
+    id: "natural-fragrance",
+    name: "Natural Fragrance Extract",
+    scientificName: "Natural Parfum",
+    category: "Luxury",
+    description: "100% pure plant-derived aromatic extracts that provide a refreshing, luxurious, and calming scent experience.",
+    benefits: ["Luxurious aromatic scent", "Calming experience", "Plant-derived purity"],
+    skinTypes: ["Normal", "Sensitive"],
+    properties: ["Aromatherapeutic", "Uplifting", "Luxurious"],
+    emoji: "🌸"
+  }
+];
