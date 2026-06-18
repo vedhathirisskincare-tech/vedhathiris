@@ -54,6 +54,18 @@ export default function Header() {
     };
   }, []);
 
+  // Lock body scroll when mobile menu is open to prevent double scroll on mobile devices
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
+
   if (pathname.startsWith("/admin")) return null;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 

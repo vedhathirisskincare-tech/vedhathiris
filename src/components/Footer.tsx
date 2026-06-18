@@ -64,10 +64,10 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-skin-white">Shop</h4>
             <ul className="space-y-2 text-sm text-skin-white/80">
-              <li><Link href="/shop" className="hover:text-skin-primary">All Products</Link></li>
-              <li><Link href="/shop?category=Soap" className="hover:text-skin-primary">Soaps</Link></li>
-              <li><Link href="/shop?category=Shampoo" className="hover:text-skin-primary">Shampoos</Link></li>
-              <li><Link href="/shop?category=Hair Oil" className="hover:text-skin-primary">Hair Oils</Link></li>
+              <li><Link href="/products" className="hover:text-skin-primary">All Products</Link></li>
+              <li><Link href="/products?category=Soap" className="hover:text-skin-primary">Soaps</Link></li>
+              <li><Link href="/products?category=Shampoo" className="hover:text-skin-primary">Shampoos</Link></li>
+              <li><Link href="/products?category=Hair Oil" className="hover:text-skin-primary">Hair Oils</Link></li>
             </ul>
           </div>
           <div>

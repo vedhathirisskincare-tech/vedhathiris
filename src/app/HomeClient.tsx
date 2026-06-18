@@ -86,7 +86,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
 
       {/* Trust Badges */}
       <section className="w-full py-12 bg-skin-bg shadow-sm z-20 border-y border-skin-primary/30">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
+        <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center gap-x-8 gap-y-10 md:grid md:grid-cols-5 md:gap-6 text-center">
           {[
             { icon: Sparkles, label: "Premium Quality" },
             { icon: Leaf, label: "100% Organic" },
@@ -94,7 +94,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
             { icon: ShieldCheck, label: "Dermatologist Approved" },
             { icon: HandHeart, label: "Hand Made" },
           ].map((badge, idx) => (
-            <div key={idx} className="flex flex-col items-center justify-center gap-3">
+            <div key={idx} className="flex flex-col items-center justify-center gap-3 w-[calc(50%-1rem)] max-w-[150px] md:w-auto shrink-0">
               <div className="text-skin-bold">
                 <badge.icon size={36} strokeWidth={1.5} />
               </div>
@@ -192,7 +192,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
               <motion.div 
                 key={testi.id}
                 whileHover={{ scale: 1.03 }}
-                className="relative aspect-[9/16] w-full rounded-3xl overflow-hidden bg-black border border-skin-primary/30 shadow-md hover:shadow-2xl transition-all duration-300"
+                className="relative aspect-[9/16] w-full rounded-3xl overflow-hidden bg-black border border-skin-primary/30 shadow-md hover:shadow-2xl transition-all duration-300 group"
               >
                 <video 
                   src={testi.videoSrc}
@@ -203,11 +203,19 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 {/* Dark gradient overlay for text readability at the bottom */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
                 
-                {/* 5-Star Rating Overlay */}
-                <div className="absolute bottom-4 left-4 z-10 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 flex gap-0.5 text-amber-400 text-xs shadow-md select-none">
-                  {"★".repeat(testi.rating)}
+                {/* Testimonial Quote & Details Overlay */}
+                <div className="absolute bottom-4 left-4 right-4 z-10 text-white flex flex-col gap-2 pointer-events-none">
+                  <div className="flex gap-0.5 text-amber-400 text-xs select-none">
+                    {"★".repeat(testi.rating)}
+                  </div>
+                  <p className="font-sans text-xs italic font-medium leading-relaxed text-white/95 drop-shadow-md">
+                    "{testi.quote}"
+                  </p>
+                  <span className="font-sans text-[10px] font-bold text-violet-200 mt-1 uppercase tracking-wider">
+                    — {testi.name}
+                  </span>
                 </div>
               </motion.div>
             ))}

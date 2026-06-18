@@ -28,7 +28,7 @@ export function ProductsListClient({ products }: { products: Product[] }) {
       <aside className="w-full md:w-64 shrink-0">
         <div className="bg-skin-white rounded-2xl p-4 md:p-6 shadow-sm border border-skin-primary/50 sticky top-24 md:top-28">
           <h2 className="font-serif text-lg md:text-xl text-skin-bold mb-3 md:mb-4">Refine By</h2>
-          <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+          <div className="flex flex-row md:flex-col gap-2 overflow-x-auto no-scrollbar md:overflow-visible pb-2 md:pb-0">
             {categories.map((cat) => (
               <button
                 key={cat}

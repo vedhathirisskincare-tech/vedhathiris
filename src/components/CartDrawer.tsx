@@ -46,6 +46,18 @@ export default function CartDrawer() {
     }
   }, [isOpen]);
 
+  // Lock body scroll when cart drawer is open to prevent double scroll on mobile devices
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   const handleCheckout = async () => {
     if (items.length === 0) return;
     
