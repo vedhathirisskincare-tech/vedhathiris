@@ -256,7 +256,7 @@ export default function Header() {
                         setIsMenuOpen(false);
                         const supabase = createClient();
                         await supabase.auth.signOut();
-                        window.location.href = "/login";
+                        window.location.href = "/login?toast=logout_success";
                       }}
                       className="w-full text-center py-2 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
                     >

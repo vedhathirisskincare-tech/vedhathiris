@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { updateUserRole, deleteUser } from '../actions'
+import { useToast } from '@/components/Toast'
 
 type User = {
   id: string
@@ -17,6 +18,7 @@ export function UsersClient({ initialUsers }: { initialUsers: User[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const toast = useToast()
 
   const openEditModal = (user: User) => {
     setEditingUser(user)
@@ -25,7 +27,12 @@ export function UsersClient({ initialUsers }: { initialUsers: User[] }) {
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this user profile?')) {
-      await deleteUser(id)
+      try {
+        await deleteUser(id)
+        toast.success('User deleted successfully')
+      } catch (error: any) {
+        toast.error(`Failed to delete user: ${error.message || error}`)
+      }
     }
   }
 
@@ -38,10 +45,11 @@ export function UsersClient({ initialUsers }: { initialUsers: User[] }) {
     const role = formData.get('role')?.toString() || 'user'
     try {
       await updateUserRole(editingUser.id, role)
+      toast.success('User role updated successfully')
       setIsModalOpen(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      alert('Failed to save user role')
+      toast.error(`Failed to save user role: ${error.message || error}`)
     } finally {
       setIsLoading(false)
     }

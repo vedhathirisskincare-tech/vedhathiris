@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { updateDeliveryStatus } from './actions'
+import { useToast } from '@/components/Toast'
 
 export function DeliveryStatusSelect({ orderId, initialStatus }: { orderId: string, initialStatus: string }) {
   const [status, setStatus] = useState(initialStatus || 'Processing')
   const [isUpdating, setIsUpdating] = useState(false)
+  const toast = useToast()
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value
@@ -13,9 +15,10 @@ export function DeliveryStatusSelect({ orderId, initialStatus }: { orderId: stri
     setIsUpdating(true)
     try {
       await updateDeliveryStatus(orderId, newStatus)
-    } catch (err) {
+      toast.success(`Delivery status updated to "${newStatus}"`)
+    } catch (err: any) {
       console.error(err)
-      alert('Failed to update delivery status')
+      toast.error(`Failed to update delivery status: ${err.message || err}`)
       setStatus(initialStatus)
     } finally {
       setIsUpdating(false)

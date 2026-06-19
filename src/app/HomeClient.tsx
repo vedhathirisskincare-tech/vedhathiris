@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { ProductCard, Product } from "@/components/ProductCard";
 import { ShieldCheck, Leaf, Heart, Sparkles, HandHeart, Droplet, Waves, FlaskConical, ChevronDown } from "lucide-react";
 
@@ -43,16 +44,27 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
     <main className="flex-1 flex flex-col min-h-screen bg-skin-bg">
       {/* Hero Section */}
       <section className="relative w-full min-h-[80vh] py-20 md:py-32 flex flex-col items-center justify-center text-center px-4 overflow-hidden isolate">
-        {/* Video Background */}
+        {/* Desktop Video Background */}
         <video 
           autoPlay 
           loop 
           muted 
           playsInline 
-          className="absolute inset-0 w-full h-full object-cover -z-20"
+          poster="/bg_video/bg_hero.webp"
+          className="hidden md:block absolute inset-0 w-full h-full object-cover -z-20"
         >
-          <source src="/bg_video/bg_hero.webm" type="video/webm" />
+          <source src="/bg_video/bg_hero.mp4" type="video/mp4" />
         </video>
+        
+        {/* Mobile Image Background */}
+        <Image
+          src="/bg_video/bg_hero.webp"
+          alt="Hero Background"
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 1px"
+          className="md:hidden object-cover -z-20"
+        />
         
         {/* Overlay for text readability */}
         <div className="absolute inset-0 bg-skin-bg/40 -z-10 pointer-events-none" />

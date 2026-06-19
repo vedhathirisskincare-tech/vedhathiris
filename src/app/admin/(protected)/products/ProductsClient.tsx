@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { createProduct, updateProduct, deleteProduct } from '../actions'
 import { Upload, X } from 'lucide-react'
+import Image from 'next/image'
+import { useToast } from '@/components/Toast'
 
 type Product = {
   id: string
@@ -20,6 +22,7 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const toast = useToast()
 
   const [image1Preview, setImage1Preview] = useState<string>('')
   const [image2Preview, setImage2Preview] = useState<string>('')
@@ -67,7 +70,12 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      await deleteProduct(id)
+      try {
+        await deleteProduct(id)
+        toast.success('Product deleted successfully')
+      } catch (error: any) {
+        toast.error(`Failed to delete product: ${error.message || error}`)
+      }
     }
   }
 
@@ -78,13 +86,15 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
     try {
       if (editingProduct) {
         await updateProduct(editingProduct.id, formData)
+        toast.success('Product updated successfully')
       } else {
         await createProduct(formData)
+        toast.success('Product created successfully')
       }
       setIsModalOpen(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      alert('Failed to save product')
+      toast.error(`Failed to save product: ${error.message || error}`)
     } finally {
       setIsLoading(false)
     }
@@ -212,7 +222,7 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
 
                           {preview ? (
                             <div className="relative w-full h-32 rounded-lg border overflow-hidden group shadow-sm bg-gray-50">
-                              <img src={preview} alt={label} className="w-full h-full object-cover" />
+                              <Image src={preview} alt={label} fill unoptimized className="object-cover" />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <button 
                                   type="button" 

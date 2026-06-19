@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
 import RealtimeListener from "../components/RealtimeListener";
 import OfferBar from "../components/OfferBar";
+import { ToastProvider } from "../components/Toast";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,14 +37,16 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans text-gray-900 bg-white">
-        <RealtimeListener />
-        <OfferBar />
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        <CartDrawer />
+        <ToastProvider>
+          <RealtimeListener />
+          <OfferBar />
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+          <CartDrawer />
+        </ToastProvider>
       </body>
     </html>
   );

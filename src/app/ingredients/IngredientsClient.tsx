@@ -8,6 +8,7 @@ import { Search, Sparkles, X, Check, Heart, Leaf, Shield, Flame, Zap, HelpCircle
 import { INGREDIENTS, Ingredient } from "@/data/ingredients";
 import { Product } from "@/components/ProductCard";
 import { useCartStore } from "@/store/cartStore";
+import { useToast } from "@/components/Toast";
 
 // Helper to parse product name and return corresponding ingredient IDs
 const getProductIngredients = (productName: string): string[] => {
@@ -106,6 +107,7 @@ export default function IngredientsClient({ products }: { products: Product[] })
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [selectedSkinType, setSelectedSkinType] = useState<SkinType | null>(null);
   const [activeIngredient, setActiveIngredient] = useState<Ingredient | null>(null);
+  const toast = useToast();
 
   // Category list derived from data
   const categories = useMemo(() => {
@@ -383,6 +385,7 @@ export default function IngredientsClient({ products }: { products: Product[] })
                               whileTap={{ scale: 0.97 }}
                               onClick={() => {
                                 useCartStore.getState().addItem(product);
+                                toast.success(`${product.name} added to cart!`);
                               }}
                               className="bg-skin-bold hover:bg-skin-bold/90 text-white font-sans font-bold text-[10px] tracking-wider uppercase px-4.5 py-2.5 rounded-xl flex items-center gap-1.5 shadow-xs transition-colors"
                             >

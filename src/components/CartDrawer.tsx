@@ -6,9 +6,12 @@ import { createRazorpayOrder, verifyPaymentAndSaveOrder } from "@/app/actions/pa
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { createClient } from "@/utils/supabase/client";
+import Image from "next/image";
+import { useToast } from "./Toast";
 
 export default function CartDrawer() {
   const { items, isOpen, setIsOpen, removeItem, updateQuantity, clearCart } = useCartStore();
+  const toast = useToast();
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
@@ -62,7 +65,7 @@ export default function CartDrawer() {
     if (items.length === 0) return;
     
     if (!deliveryName.trim() || !deliveryPhone.trim() || !deliveryAddress.trim()) {
-      alert("Please fill in all delivery details before proceeding to payment.");
+      toast.error("Please fill in all delivery details before proceeding to payment.");
       return;
     }
 
@@ -73,7 +76,7 @@ export default function CartDrawer() {
       const { success, order, error } = await createRazorpayOrder(total);
       
       if (!success || !order) {
-        alert("Failed to create order. Please try again.");
+        toast.error("Failed to create order. Please try again.");
         setIsCheckingOut(false);
         return;
       }
@@ -106,10 +109,10 @@ export default function CartDrawer() {
           if (result.success && result.orderId) {
             clearCart();
             setIsOpen(false);
-            router.push(`/invoice/${result.orderId}`);
+            router.push(`/invoice/${result.orderId}?toast=payment_success`);
           } else {
             console.error("Payment verification result:", result);
-            alert(`Payment verification failed: ${result.error || 'Unknown error'}. Please contact support.`);
+            toast.error(`Payment verification failed: ${result.error || 'Unknown error'}. Please contact support.`);
           }
         },
         prefill: {
@@ -119,17 +122,22 @@ export default function CartDrawer() {
         theme: {
           color: "#7c3aed", // violet-600
         },
+        modal: {
+          ondismiss: function () {
+            toast.error("Payment cancelled.");
+          }
+        }
       };
 
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (response: any) {
-        alert(`Payment Failed: ${response.error.description}`);
+        toast.error(`Payment Failed: ${response.error.description}`);
       });
       rzp.open();
 
     } catch (err) {
       console.error(err);
-      alert("An error occurred during checkout.");
+      toast.error("An error occurred during checkout.");
     } finally {
       setIsCheckingOut(false);
     }
@@ -233,15 +241,23 @@ export default function CartDrawer() {
                   </button>
                 </div>
               ) : (
-                items.map((item) => (
-                  <div key={item.id} className="flex gap-4 border rounded-xl p-3 bg-white shadow-sm">
-                    <div className="w-20 h-20 bg-violet-100 rounded-lg flex items-center justify-center shrink-0">
-                      {(item.images?.[0] || item.image_url) ? (
-                        <img src={item.images?.[0] || item.image_url} alt={item.name} className="w-full h-full object-cover rounded-lg" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-violet-300" />
-                      )}
-                    </div>
+                items.map((item) => {
+                  const imageUrl = item.images?.[0] || item.image_url;
+                  return (
+                    <div key={item.id} className="flex gap-4 border rounded-xl p-3 bg-white shadow-sm">
+                      <div className="w-20 h-20 bg-violet-100 rounded-lg flex items-center justify-center shrink-0 relative overflow-hidden">
+                        {imageUrl ? (
+                          <Image
+                            src={imageUrl}
+                            alt={item.name}
+                            fill
+                            sizes="80px"
+                            className="object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-violet-300" />
+                        )}
+                      </div>
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <h3 className="font-medium text-sm line-clamp-2">{item.name}</h3>
@@ -263,7 +279,8 @@ export default function CartDrawer() {
                       </div>
                     </div>
                   </div>
-                ))
+                );
+              })
               )}
             </div>
           )}

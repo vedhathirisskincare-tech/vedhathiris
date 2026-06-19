@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { deleteEnquiry } from '../actions'
 import { Mail, Trash2, Eye, X, Calendar, User, Phone } from 'lucide-react'
+import { useToast } from '@/components/Toast'
 
 type Enquiry = {
   id: string
@@ -17,17 +18,19 @@ export function EnquiriesClient({ initialEnquiries }: { initialEnquiries: Enquir
   const [enquiries, setEnquiries] = useState<Enquiry[]>(initialEnquiries)
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const toast = useToast()
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this contact enquiry?')) {
       try {
         await deleteEnquiry(id)
+        toast.success('Enquiry deleted successfully')
         setEnquiries(enquiries.filter((e) => e.id !== id))
         if (selectedEnquiry?.id === id) {
           setIsModalOpen(false)
         }
       } catch (err: any) {
-        alert(`Failed to delete enquiry: ${err.message}`)
+        toast.error(`Failed to delete enquiry: ${err.message || err}`)
       }
     }
   }

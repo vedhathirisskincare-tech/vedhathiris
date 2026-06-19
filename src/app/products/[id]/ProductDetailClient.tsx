@@ -6,9 +6,11 @@ import { motion } from "framer-motion";
 import { useCartStore } from "@/store/cartStore";
 import { ShieldCheck, Leaf, Heart } from "lucide-react";
 import type { Product } from "@/components/ProductCard";
+import { useToast } from "@/components/Toast";
 
 export function ProductDetailClient({ product }: { product: Product }) {
   const { addItem } = useCartStore();
+  const toast = useToast();
   
   // Handle fallback to single image_url if images array is empty or undefined
   const images = (product.images && product.images.length > 0) 
@@ -110,7 +112,10 @@ export function ProductDetailClient({ product }: { product: Product }) {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => addItem(product)}
+                  onClick={() => {
+                    addItem(product);
+                    toast.success(`${product.name} added to cart!`);
+                  }}
                   className="flex-1 bg-skin-bold text-skin-white py-4 rounded-xl font-sans font-bold text-lg shadow-md hover:shadow-lg transition-all"
                 >
                   Add to Cart

@@ -3,6 +3,7 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 // Create a supabase client with the service role key to bypass RLS
 // This is safe here because these actions are protected by the admin_session cookie
@@ -30,6 +31,7 @@ async function uploadProductImage(file: File): Promise<string> {
     .from('product-images')
     .upload(fileName, buffer, {
       contentType: file.type,
+      cacheControl: '31536000',
       upsert: true
     })
     
@@ -201,6 +203,7 @@ export async function updateOffer(formData: FormData) {
   if (error) throw new Error(error.message)
   revalidatePath('/admin/offer')
   revalidatePath('/')
+  redirect('/admin/offer?toast=offer_success')
 }
 
 export async function updateCategoryOffer(category: string, discount: number, isActive: boolean) {
@@ -242,4 +245,5 @@ export async function updateAllCategoryOffers(formData: FormData) {
   revalidatePath('/admin/offer')
   revalidatePath('/products')
   revalidatePath('/')
+  redirect('/admin/offer?toast=category_offer_success')
 }

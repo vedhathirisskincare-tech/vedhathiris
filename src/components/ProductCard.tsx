@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { useCartStore } from "../store/cartStore";
 import Link from "next/link";
+import { useToast } from "./Toast";
 
 export interface Product {
   id: string;
@@ -24,6 +25,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const imageUrl = product.images?.[0] || product.image_url;
+  const toast = useToast();
 
   return (
     <Link href={`/products/${product.id}`}>
@@ -86,6 +88,7 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={(e) => {
                 e.preventDefault();
                 useCartStore.getState().addItem(product);
+                toast.success(`${product.name} added to cart!`);
               }}
               className="bg-skin-bold text-skin-white font-medium px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow"
               aria-label="Add to cart"

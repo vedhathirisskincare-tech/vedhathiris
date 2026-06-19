@@ -8,6 +8,7 @@ async function uploadImage(supabase, localPath, fileName) {
     .from('product-images')
     .upload(`HairOils/${fileName}`, fileBuffer, {
       contentType: 'image/png',
+      cacheControl: '31536000',
       upsert: true
     });
 
