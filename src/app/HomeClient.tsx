@@ -63,7 +63,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
           fill
           priority
           sizes="(max-width: 768px) 100vw, 1px"
-          className="md:hidden object-cover -z-20"
+          className="md:hidden object-cover object-left -z-20"
         />
         
         {/* Overlay for text readability */}
