@@ -171,6 +171,10 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
                   <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                   <select name="category" defaultValue={editingProduct?.category || 'Soap'} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-600 outline-none">
                     <option value="Soap">Soap</option>
+                    <option value="Luxury Collection">Luxury Collection</option>
+                    <option value="Floral Collection">Floral Collection</option>
+                    <option value="Herbal Collection">Herbal Collection</option>
+                    <option value="Super Luxury Collection">Super Luxury Collection</option>
                     <option value="Shampoo">Shampoo</option>
                     <option value="Hair Oil">Hair Oil</option>
                   </select>

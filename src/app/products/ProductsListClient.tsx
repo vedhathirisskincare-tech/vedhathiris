@@ -9,16 +9,42 @@ export function ProductsListClient({ products }: { products: Product[] }) {
   const categoryParam = searchParams.get("category");
   
   const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [activeSubcategory, setActiveSubcategory] = useState<string>("All");
+
+  const soapSubcategories = [
+    "Luxury Collection",
+    "Floral Collection",
+    "Herbal Collection",
+    "Super Luxury Collection"
+  ];
 
   useEffect(() => {
     if (categoryParam && ["Soap", "Shampoo", "Hair Oil"].includes(categoryParam)) {
       setActiveCategory(categoryParam);
+      setActiveSubcategory("All");
     }
   }, [categoryParam]);
 
-  const filteredProducts = activeCategory === "All" 
-    ? products 
-    : products.filter(p => p.category === activeCategory);
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat);
+    setActiveSubcategory("All");
+  };
+
+  const filteredProducts = products.filter(p => {
+    const isSoapProduct = soapSubcategories.includes(p.category) || p.category === "Soap";
+    
+    if (activeCategory === "All") {
+      return true;
+    }
+    
+    if (activeCategory === "Soap") {
+      if (!isSoapProduct) return false;
+      if (activeSubcategory === "All") return true;
+      return p.category === activeSubcategory;
+    }
+    
+    return p.category === activeCategory;
+  });
 
   const categories = ["All", "Soap", "Shampoo", "Hair Oil"];
 
@@ -32,7 +58,7 @@ export function ProductsListClient({ products }: { products: Product[] }) {
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => handleCategoryChange(cat)}
                 className={`text-center md:text-left font-sans font-medium px-4 py-2 md:py-3 rounded-xl transition-colors whitespace-nowrap ${
                   activeCategory === cat 
                     ? "bg-skin-primary/30 text-skin-bold" 
@@ -48,6 +74,28 @@ export function ProductsListClient({ products }: { products: Product[] }) {
 
       {/* Product Grid */}
       <div className="flex-1">
+        {activeCategory === "Soap" && (
+          <div className="flex flex-wrap gap-2 pb-6 mb-2 overflow-x-auto no-scrollbar">
+            {["All Soaps", ...soapSubcategories].map((sub) => {
+              const value = sub === "All Soaps" ? "All" : sub;
+              const isActive = activeSubcategory === value;
+              return (
+                <button
+                  key={sub}
+                  onClick={() => setActiveSubcategory(value)}
+                  className={`font-sans font-medium px-4 py-2 rounded-full border text-sm transition-all whitespace-nowrap ${
+                    isActive 
+                      ? "bg-skin-bold text-skin-white border-skin-bold shadow-sm" 
+                      : "bg-white text-skin-primary border-skin-primary/30 hover:border-skin-primary"
+                  }`}
+                >
+                  {sub}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -63,3 +111,4 @@ export function ProductsListClient({ products }: { products: Product[] }) {
     </div>
   );
 }
+

@@ -17,11 +17,15 @@ export interface DBCategoryOffer {
   is_active: boolean;
 }
 
+const SOAP_COLLECTIONS = ["Luxury Collection", "Floral Collection", "Herbal Collection", "Super Luxury Collection"];
+
 export function applyDiscountsToProducts(products: DBProduct[], categoryOffers: DBCategoryOffer[] | null) {
   if (!products) return [];
   
   return products.map(product => {
-    const categoryOffer = categoryOffers?.find(o => o.category === product.category);
+    const isSoap = SOAP_COLLECTIONS.includes(product.category) || product.category === "Soap";
+    const categoryName = isSoap ? "Soap" : product.category;
+    const categoryOffer = categoryOffers?.find(o => o.category === categoryName);
     const categoryDiscount = categoryOffer ? categoryOffer.discount_percentage : 0;
     const effectiveDiscount = Math.max(product.discount_percentage || 0, categoryDiscount || 0);
     const discountedPrice = effectiveDiscount > 0 
@@ -39,7 +43,9 @@ export function applyDiscountsToProducts(products: DBProduct[], categoryOffers: 
 
 export function applyDiscountToSingleProduct(product: DBProduct, categoryOffers: DBCategoryOffer[] | null) {
   if (!product) return null;
-  const categoryOffer = categoryOffers?.find(o => o.category === product.category);
+  const isSoap = SOAP_COLLECTIONS.includes(product.category) || product.category === "Soap";
+  const categoryName = isSoap ? "Soap" : product.category;
+  const categoryOffer = categoryOffers?.find(o => o.category === categoryName);
   const categoryDiscount = categoryOffer ? categoryOffer.discount_percentage : 0;
   const effectiveDiscount = Math.max(product.discount_percentage || 0, categoryDiscount || 0);
   const discountedPrice = effectiveDiscount > 0 

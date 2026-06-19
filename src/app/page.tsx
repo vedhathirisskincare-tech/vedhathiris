@@ -9,8 +9,8 @@ export default async function Home() {
   const { data: categoryOffers } = await supabase.from('category_offers').select('*');
 
   const targetNames = [
-    "Pappaya Soap",
-    "Potato beetroot tomato soap",
+    "Papaya Nourish Soap",
+    "Potato, Beetroot & Tomato Soap",
     "Seraphine Aura Luxurious Hair Elixir",
     "Keravance Luxe"
   ];
