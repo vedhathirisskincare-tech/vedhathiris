@@ -9,6 +9,7 @@ export interface DBProduct {
   image_url?: string;
   discount_percentage?: number;
   created_at: string;
+  ingredients?: string[];
 }
 
 export interface DBCategoryOffer {

@@ -17,6 +17,39 @@ export interface Product {
   image_url?: string; // For backward compatibility if needed
   discount_percentage?: number;
   original_price?: number;
+  ingredients?: string[]; // Optional ingredients array
+}
+
+// Helper to generate 4 main ingredients if not provided
+function getIngredients(name: string, category: string): string[] {
+  const lowerName = name.toLowerCase();
+  let main: string[] = [];
+  
+  if (lowerName.includes("manjistha")) main.push("Manjistha");
+  if (lowerName.includes("green gram")) main.push("Green Gram");
+  if (lowerName.includes("potato")) main.push("Potato Extract");
+  if (lowerName.includes("beetroot")) main.push("Beetroot");
+  if (lowerName.includes("tomato")) main.push("Tomato Extract");
+  if (lowerName.includes("rose")) main.push("Rose Petals");
+  if (lowerName.includes("carrot")) main.push("Carrot Extract");
+  if (lowerName.includes("saffron")) main.push("Saffron");
+  if (lowerName.includes("camel milk")) main.push("Camel Milk");
+  if (lowerName.includes("charcoal")) main.push("Activated Charcoal");
+  if (lowerName.includes("neem")) main.push("Neem Extract");
+  if (lowerName.includes("papaya")) main.push("Papaya Extract");
+  if (lowerName.includes("banana")) main.push("Banana Extract");
+  if (lowerName.includes("oats")) main.push("Oats");
+  if (lowerName.includes("almond")) main.push("Almond Oil");
+  if (lowerName.includes("rice")) main.push("Rice Water");
+  if (lowerName.includes("redsandal") || lowerName.includes("red sandal")) main.push("Red Sandalwood");
+  if (lowerName.includes("coffee")) main.push("Coffee Beans");
+  if (lowerName.includes("licorice")) main.push("Licorice Extract");
+  
+  const defaults = category.toLowerCase().includes("soap") || category.toLowerCase().includes("collection")
+    ? ["Coconut Oil", "Shea Butter", "Olive Oil", "Essential Oils"]
+    : ["Coconut Oil", "Bhringraj", "Amla", "Hibiscus"];
+    
+  return Array.from(new Set([...main, ...defaults])).slice(0, 4);
 }
 
 interface ProductCardProps {
@@ -26,6 +59,9 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const imageUrl = product.images?.[0] || product.image_url;
   const toast = useToast();
+  const ingredients = product.ingredients && product.ingredients.length > 0 
+    ? product.ingredients.slice(0, 4) 
+    : getIngredients(product.name, product.category);
 
   return (
     <Link href={`/products/${product.id}`}>
@@ -68,9 +104,18 @@ export function ProductCard({ product }: ProductCardProps) {
           <h3 className="font-serif font-bold text-lg text-skin-bold leading-tight min-h-[3rem]">
             {product.name}
           </h3>
-          <p className="text-skin-primary font-sans text-sm line-clamp-2 min-h-[2.5rem] flex-1">
+          <p className="text-skin-primary font-sans text-sm line-clamp-2 min-h-[2.5rem]">
             {product.description}
           </p>
+          
+          {/* Ingredients Section */}
+          <div className="flex flex-wrap gap-1.5 mt-2 mb-1 flex-1 items-start">
+            {ingredients.map((ingredient, idx) => (
+              <span key={idx} className="bg-skin-primary/10 text-skin-bold font-sans text-[10px] font-medium px-2 py-0.5 rounded-full border border-skin-primary/20 whitespace-nowrap">
+                {ingredient}
+              </span>
+            ))}
+          </div>
           <div className="flex items-center justify-between mt-3">
             <div className="flex flex-col">
               {product.original_price && product.original_price > product.price ? (

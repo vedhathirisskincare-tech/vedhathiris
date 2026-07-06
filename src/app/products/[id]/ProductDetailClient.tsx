@@ -102,11 +102,25 @@ export function ProductDetailClient({ product }: { product: Product }) {
                 </span>
               </div>
 
-              <div className="prose prose-lg text-skin-primary mb-10">
+              <div className="prose prose-lg text-skin-primary mb-6">
                 <p className="text-lg leading-relaxed whitespace-pre-line">
                   {product.description} 
                 </p>
               </div>
+
+              {/* Ingredients Section */}
+              {product.ingredients && product.ingredients.length > 0 && (
+                <div className="mb-10">
+                  <h3 className="font-serif font-bold text-xl text-skin-bold mb-3">Key Ingredients</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {product.ingredients.map((ingredient, idx) => (
+                      <span key={idx} className="bg-skin-primary/10 text-skin-bold font-sans text-sm font-medium px-3 py-1 rounded-full border border-skin-primary/20">
+                        {ingredient}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-4 mb-12">
                 <motion.button
