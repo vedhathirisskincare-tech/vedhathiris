@@ -66,7 +66,7 @@ export default function Header() {
     };
   }, [isMenuOpen]);
 
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/signup")) return null;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";

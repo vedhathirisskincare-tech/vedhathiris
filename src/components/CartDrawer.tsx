@@ -73,17 +73,24 @@ export default function CartDrawer() {
 
     try {
       // 1. Create order on server
-      const { success, order, error } = await createRazorpayOrder(total);
+      const { success, order, error, keyId } = await createRazorpayOrder(total);
       
       if (!success || !order) {
-        toast.error("Failed to create order. Please try again.");
+        toast.error(error || "Failed to create order. Please try again.");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      const razorpayKey = keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      if (!razorpayKey) {
+        toast.error("Razorpay Authentication Key is missing. Please check your environment configuration.");
         setIsCheckingOut(false);
         return;
       }
 
       // 2. Initialize Razorpay
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: razorpayKey,
         amount: order.amount,
         currency: order.currency,
         name: "Vedhathiri's Premium Personal Care",

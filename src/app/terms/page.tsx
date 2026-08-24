@@ -1,3 +1,15 @@
+import type { Metadata } from 'next';
+import { getLanguageAlternates } from '@/utils/site';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: "Read the Terms of Service for ordering and using Vedhathiri's Skin Care handcrafted products.",
+  alternates: {
+    canonical: '/terms',
+    languages: getLanguageAlternates('/terms'),
+  },
+};
+
 export default function TermsPage() {
   return (
     <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl">

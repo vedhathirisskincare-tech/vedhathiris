@@ -1,7 +1,16 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import { FileText, Printer } from 'lucide-react';
 import { PrintButton } from './PrintButton';
+
+export const metadata: Metadata = {
+  title: 'Order Invoice',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function InvoicePage({
   params,

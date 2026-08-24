@@ -1,15 +1,14 @@
 import { createClient } from "@/utils/supabase/server"
-import { updateOffer, updateAllCategoryOffers } from "../actions"
+import { updateAllCategoryOffers, createCarouselOffer, updateCarouselOffer, deleteCarouselOffer } from "../actions"
 
 export default async function OfferSettingsPage() {
   const supabase = await createClient()
-  
-  // Fetch promotional offer bar
-  const { data: offer } = await supabase
-    .from('offers')
-    .select('message, is_active')
-    .eq('id', 1)
-    .single()
+
+  // Fetch carousel offers
+  const { data: carouselOffers } = await supabase
+    .from('carousel_offers')
+    .select('*')
+    .order('created_at', { ascending: false })
 
   // Fetch category offers/discounts
   const { data: categoryOffers } = await supabase
@@ -24,50 +23,93 @@ export default async function OfferSettingsPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Offer Bar Settings</h1>
-          <p className="text-gray-500 mt-2">Manage the top promotional banner displayed across the website.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Offers Settings</h1>
+          <p className="text-gray-500 mt-2">Manage the multiple promotional messages displayed in the top bar carousel.</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border p-6">
-          <form action={updateOffer} className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm border p-6 space-y-8">
+          <form action={createCarouselOffer} className="space-y-4 border-b pb-6">
+            <h3 className="font-semibold text-lg text-gray-900">Add New Offer</h3>
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="new_message" className="block text-sm font-medium text-gray-700 mb-2">
                 Offer Message
               </label>
               <input
                 type="text"
-                id="message"
+                id="new_message"
                 name="message"
-                defaultValue={offer?.message || ''}
-                placeholder="e.g. Use code VEDHATHIRIS for 10% off your first order!"
+                placeholder="e.g. Free shipping on orders over ₹1000!"
                 required
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-600 outline-none transition-shadow"
               />
             </div>
-
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
-                id="is_active"
+                id="new_is_active"
                 name="is_active"
-                defaultChecked={offer?.is_active ?? false}
+                defaultChecked={true}
                 className="w-5 h-5 text-violet-600 border-gray-300 rounded focus:ring-violet-600"
               />
-              <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
-                Enable Offer Bar
+              <label htmlFor="new_is_active" className="text-sm font-medium text-gray-700">
+                Active
               </label>
-              <p className="text-sm text-gray-500 ml-2">(Check this to display the offer bar on the website)</p>
             </div>
-
-            <div className="pt-4 border-t">
-              <button
-                type="submit"
-                className="bg-violet-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-violet-700 transition-colors cursor-pointer"
-              >
-                Save Changes
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="bg-violet-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-violet-700 transition-colors cursor-pointer"
+            >
+              Add Offer
+            </button>
           </form>
+
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg text-gray-900">Existing Offers</h3>
+            {carouselOffers && carouselOffers.length > 0 ? (
+              <div className="space-y-4">
+                {carouselOffers.map((co) => (
+                  <div key={co.id} className="border p-4 rounded-lg bg-gray-50 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <form action={updateCarouselOffer.bind(null, co.id)} className="flex-1 flex flex-col md:flex-row gap-4 w-full">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          name="message"
+                          defaultValue={co.message}
+                          required
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-600 outline-none transition-shadow"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          name="is_active"
+                          defaultChecked={co.is_active}
+                          className="w-5 h-5 text-violet-600 border-gray-300 rounded focus:ring-violet-600"
+                        />
+                        <span className="text-sm">Active</span>
+                      </div>
+                      <button
+                        type="submit"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        Update
+                      </button>
+                    </form>
+                    <form action={deleteCarouselOffer.bind(null, co.id)}>
+                      <button
+                        type="submit"
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">No carousel offers found.</p>
+            )}
+          </div>
         </div>
       </div>
 

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Menu, X } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Menu, X, Star } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { adminLogout } from '../login/actions'
 
@@ -18,6 +18,7 @@ export function AdminMobileNav() {
     { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/enquiries', label: 'Enquiries', icon: Mail },
     { href: '/admin/offer', label: 'Offers', icon: Tag },
+    { href: '/admin/reviews', label: 'Reviews', icon: Star },
   ]
 
   const toggleMenu = () => setIsOpen(!isOpen)

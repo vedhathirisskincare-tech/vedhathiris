@@ -1,3 +1,15 @@
+import type { Metadata } from 'next';
+import { getLanguageAlternates } from '@/utils/site';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: "Read the Privacy Policy for Vedhathiri's Skin Care to learn how we collect, protect, and handle your personal data.",
+  alternates: {
+    canonical: '/privacy',
+    languages: getLanguageAlternates('/privacy'),
+  },
+};
+
 export default function PrivacyPage() {
   return (
     <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl">

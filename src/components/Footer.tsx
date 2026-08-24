@@ -7,7 +7,7 @@ import { HandHeart, Leaf, Droplet, Waves, Sparkles } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/signup")) return null;
   return (
     <footer className="relative bg-skin-bold pt-12 pb-8 mt-auto text-skin-white overflow-hidden">
       {/* Floating Background Elements */}
@@ -86,7 +86,33 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-skin-white/20 pt-8 text-center text-sm text-skin-white/60">
+
+        {/* SEO Location and Keyword Footer Links */}
+        <div className="border-t border-skin-white/10 pt-6 pb-6 text-xs text-skin-white/70">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+            <div>
+              <p className="font-semibold text-skin-white/90 mb-1">
+                Vedhathiri's Skin Care — Chetpet, Chennai, Tamil Nadu, India
+              </p>
+              <p className="text-skin-white/60">
+                Artisan producer of cold-processed natural soaps, herbal skincare products, natural shampoo bars, and Ayurvedic hair oils.
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center md:justify-end gap-x-3 gap-y-1 text-[11px] text-skin-white/60">
+              <Link href="/products?category=Soap" className="hover:text-skin-primary">Natural Soap in Chennai</Link>
+              <span>•</span>
+              <Link href="/products?category=Soap" className="hover:text-skin-primary">Handmade Soap in Chennai</Link>
+              <span>•</span>
+              <Link href="/products" className="hover:text-skin-primary">Herbal Skincare Products</Link>
+              <span>•</span>
+              <Link href="/products?category=Hair Oil" className="hover:text-skin-primary">Natural Hair Oil in Chennai</Link>
+              <span>•</span>
+              <Link href="/products?category=Shampoo" className="hover:text-skin-primary">Herbal Shampoo in Chennai</Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-skin-white/20 pt-6 text-center text-sm text-skin-white/60">
           <p>&copy; {new Date().getFullYear()} Vedhathiri's Skin Care. All rights reserved.</p>
         </div>
       </div>

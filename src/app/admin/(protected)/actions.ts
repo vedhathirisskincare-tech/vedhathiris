@@ -191,20 +191,7 @@ export async function updateDeliveryStatus(id: string, delivery_status: string) 
   revalidatePath('/profile')
 }
 
-// Offer Actions
-export async function updateOffer(formData: FormData) {
-  const supabase = getAdminSupabase()
-  
-  const message = formData.get('message')?.toString() || ''
-  const is_active = formData.get('is_active') === 'on'
 
-  const { error } = await supabase.from('offers').update({ message, is_active }).eq('id', 1)
-
-  if (error) throw new Error(error.message)
-  revalidatePath('/admin/offer')
-  revalidatePath('/')
-  redirect('/admin/offer?toast=offer_success')
-}
 
 export async function updateCategoryOffer(category: string, discount: number, isActive: boolean) {
   const supabase = getAdminSupabase()
@@ -246,4 +233,55 @@ export async function updateAllCategoryOffers(formData: FormData) {
   revalidatePath('/products')
   revalidatePath('/')
   redirect('/admin/offer?toast=category_offer_success')
+}
+
+// Carousel Offer Actions
+export async function createCarouselOffer(formData: FormData) {
+  const supabase = getAdminSupabase()
+  
+  const message = formData.get('message')?.toString() || ''
+  const is_active = formData.get('is_active') === 'on'
+
+  const { error } = await supabase.from('carousel_offers').insert([{ message, is_active }])
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/offer')
+  revalidatePath('/')
+  redirect('/admin/offer?toast=carousel_offer_created')
+}
+
+export async function updateCarouselOffer(id: string, formData: FormData) {
+  const supabase = getAdminSupabase()
+  
+  const message = formData.get('message')?.toString() || ''
+  const is_active = formData.get('is_active') === 'on'
+
+  const { error } = await supabase.from('carousel_offers').update({ message, is_active }).eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/offer')
+  revalidatePath('/')
+  redirect('/admin/offer?toast=carousel_offer_updated')
+}
+
+export async function deleteCarouselOffer(id: string) {
+  const supabase = getAdminSupabase()
+  
+  const { error } = await supabase.from('carousel_offers').delete().eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/offer')
+  revalidatePath('/')
+  redirect('/admin/offer?toast=carousel_offer_deleted')
+}
+
+// Review Actions
+export async function deleteReview(id: string) {
+  const supabase = getAdminSupabase()
+  const { error } = await supabase.from('product_reviews').delete().eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/reviews')
+  revalidatePath('/products')
+  revalidatePath('/')
 }

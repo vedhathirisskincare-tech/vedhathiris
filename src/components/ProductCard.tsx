@@ -18,6 +18,8 @@ export interface Product {
   discount_percentage?: number;
   original_price?: number;
   ingredients?: string[]; // Optional ingredients array
+  average_rating?: number; // Added for product reviews
+  review_count?: number; // Added for product reviews
 }
 
 // Helper to generate 4 main ingredients if not provided
@@ -96,6 +98,13 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.discount_percentage && product.discount_percentage > 0 ? (
             <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-extrabold shadow-md">
               {product.discount_percentage}% OFF
+            </div>
+          ) : null}
+          {product.average_rating ? (
+            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-skin-bold shadow-sm flex items-center gap-1 border border-skin-primary/10">
+              <span className="text-red-500">❤️</span>
+              <span>{product.average_rating.toFixed(1)}</span>
+              <span className="text-gray-500 text-[10px] font-normal ml-0.5">({product.review_count})</span>
             </div>
           ) : null}
         </div>

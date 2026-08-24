@@ -7,8 +7,17 @@ import { useCartStore } from "@/store/cartStore";
 import { ShieldCheck, Leaf, Heart } from "lucide-react";
 import type { Product } from "@/components/ProductCard";
 import { useToast } from "@/components/Toast";
+import { ProductReviews, type Review } from "./ProductReviews";
 
-export function ProductDetailClient({ product }: { product: Product }) {
+export function ProductDetailClient({ 
+  product,
+  reviews,
+  currentUserId 
+}: { 
+  product: Product;
+  reviews: Review[];
+  currentUserId: string | null;
+}) {
   const { addItem } = useCartStore();
   const toast = useToast();
   
@@ -73,9 +82,19 @@ export function ProductDetailClient({ product }: { product: Product }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="font-serif text-4xl md:text-5xl text-skin-bold mb-4 leading-tight">
+              <h1 className="font-serif text-4xl md:text-5xl text-skin-bold mb-2 leading-tight">
                 {product.name}
               </h1>
+              
+              {product.average_rating ? (
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center bg-white/90 px-3 py-1 rounded-full text-sm font-bold text-skin-bold shadow-sm border border-skin-primary/10">
+                    <span className="text-red-500 mr-1.5">❤️</span>
+                    <span>{product.average_rating.toFixed(1)}</span>
+                    <span className="text-gray-500 text-xs font-normal ml-1">({product.review_count} reviews)</span>
+                  </div>
+                </div>
+              ) : null}
               
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-baseline gap-2">
@@ -161,6 +180,13 @@ export function ProductDetailClient({ product }: { product: Product }) {
             </motion.div>
           </div>
         </div>
+        
+        {/* Reviews Section */}
+        <ProductReviews 
+          productId={product.id} 
+          reviews={reviews} 
+          currentUserId={currentUserId} 
+        />
       </div>
     </main>
   );

@@ -74,6 +74,49 @@ export function ProductsListClient({ products }: { products: Product[] }) {
 
       {/* Product Grid */}
       <div className="flex-1">
+        <div className="mb-6 bg-white p-6 rounded-2xl border border-skin-primary/20 shadow-sm">
+          {activeCategory === "Soap" && (
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
+                Natural & Handmade Soap in Chennai
+              </h2>
+              <p className="font-sans text-sm text-skin-bold/70">
+                Cold-processed herbal soap in Chennai enriched with red sandalwood, saffron, neem, and nourishing botanical oils.
+              </p>
+            </div>
+          )}
+          {activeCategory === "Shampoo" && (
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
+                Natural & Herbal Shampoo in Chennai
+              </h2>
+              <p className="font-sans text-sm text-skin-bold/70">
+                Gentle, sulfate-free natural hair shampoo in Chennai for root-to-tip scalp nourishment and luster.
+              </p>
+            </div>
+          )}
+          {activeCategory === "Hair Oil" && (
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
+                Natural Hair Oil & Hair Care in Chennai
+              </h2>
+              <p className="font-sans text-sm text-skin-bold/70">
+                Ayurvedic herbal hair oil in Chennai formulated with potent herbal infusions for intensive natural hair care.
+              </p>
+            </div>
+          )}
+          {activeCategory === "All" && (
+            <div>
+              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
+                Handcrafted Natural Skincare in Chennai
+              </h2>
+              <p className="font-sans text-sm text-skin-bold/70">
+                Explore our full line of handmade soaps, herbal hair oils, and organic personal care products handcrafted in Chennai.
+              </p>
+            </div>
+          )}
+        </div>
+
         {activeCategory === "Soap" && (
           <div className="flex flex-wrap gap-2 pb-6 mb-2 overflow-x-auto no-scrollbar">
             {["All Soaps", ...soapSubcategories].map((sub) => {

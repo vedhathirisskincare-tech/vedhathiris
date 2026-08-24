@@ -1,8 +1,18 @@
+import type { Metadata } from 'next'
 import { login } from './actions'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { PasswordInput } from '@/components/PasswordInput'
+import ProductImageCarousel from '@/components/ProductImageCarousel'
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default async function LoginPage({
   searchParams,
@@ -18,10 +28,17 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="flex-1 flex justify-center items-center p-4 bg-violet-50 min-h-[calc(100vh-4rem)] py-8 md:py-12">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8">
-          <h2 className="text-2xl font-bold text-center text-violet-600 mb-8">Welcome Back</h2>
+    <div className="h-[100dvh] w-full flex justify-center items-center p-4 md:p-8 bg-violet-50 overflow-hidden">
+      <div className="w-full max-w-5xl h-full max-h-[800px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+        
+        {/* Left Side: Form */}
+        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex justify-center mb-4">
+            <Link href="/">
+              <img src="/Vedhathiris_Logo.png" alt="Vedhathiris" className="h-20 w-auto object-contain" />
+            </Link>
+          </div>
+          <h2 className="text-2xl font-bold text-center text-violet-600 mb-6 shrink-0">Welcome Back</h2>
           
           {params.error && (
             <div className="mb-4 p-3 bg-red-100 text-red-600 rounded-lg text-sm text-center">
@@ -58,7 +75,7 @@ export default async function LoginPage({
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full py-2 px-4 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg transition-colors"
+                className="w-full py-2 px-4 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg transition-colors cursor-pointer"
               >
                 Log In
               </button>
@@ -71,6 +88,11 @@ export default async function LoginPage({
               Sign up here
             </Link>
           </div>
+        </div>
+
+        {/* Right Side: Carousel */}
+        <div className="hidden md:block w-full md:w-1/2 p-4">
+          <ProductImageCarousel />
         </div>
       </div>
     </div>

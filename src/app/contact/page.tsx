@@ -1,9 +1,37 @@
+import type { Metadata } from 'next'
 import { ContactForm } from './ContactForm'
 import { MapPin, Mail, Clock } from 'lucide-react'
+import { getLanguageAlternates } from '@/utils/site'
+import { CHENNAI_KEYWORDS, generateLocalBusinessSchema, generateBreadcrumbSchema } from '@/utils/seo'
+
+export const metadata: Metadata = {
+  title: 'Contact Us | Natural Skincare & Handmade Soap in Chennai',
+  description:
+    "Contact Vedhathiri's Skin Care in Chetpet, Chennai for customer support, natural skincare products in Chennai, handmade soap orders, and delivery inquiries.",
+  keywords: [...CHENNAI_KEYWORDS.skincare, ...CHENNAI_KEYWORDS.soap],
+  alternates: {
+    canonical: '/contact',
+    languages: getLanguageAlternates('/contact'),
+  },
+}
 
 export default function ContactPage() {
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Contact Us', path: '/contact' },
+  ];
+
   return (
     <div className="min-h-[85vh] bg-[#fbf9ff] py-12 md:py-20 px-4">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            generateLocalBusinessSchema(),
+            generateBreadcrumbSchema(breadcrumbs),
+          ]),
+        }}
+      />
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-12 md:mb-16">
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-skin-bold mb-4">

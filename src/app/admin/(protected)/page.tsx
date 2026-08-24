@@ -15,6 +15,10 @@ export default async function AdminDashboard() {
     .from('orders')
     .select('*', { count: 'exact', head: true })
 
+  const { count: reviewsCount } = await supabase
+    .from('product_reviews')
+    .select('*', { count: 'exact', head: true })
+
   const { data: recentOrdersData, error: ordersError } = await supabase
     .from('orders')
     .select('*')
@@ -33,7 +37,7 @@ export default async function AdminDashboard() {
       .from('profiles')
       .select('id, full_name, email')
       .in('id', userIds)
-      
+
     recentOrders = recentOrdersData.map(order => {
       const profile = profiles?.find(p => p.id === order.user_id)
       return { ...order, profiles: profile }
@@ -43,15 +47,19 @@ export default async function AdminDashboard() {
   return (
     <div>
       <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Dashboard Overview</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 font-medium mb-2">Total Users</h3>
+          <h3 className="text-gray-500 font-medium mb-2">Users</h3>
           <p className="text-3xl font-bold text-gray-900">{usersCount || 0}</p>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 font-medium mb-2">Total Orders</h3>
+          <h3 className="text-gray-500 font-medium mb-2">Orders</h3>
           <p className="text-3xl font-bold text-gray-900">{ordersCount || 0}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 className="text-gray-500 font-medium mb-2">Reviews</h3>
+          <p className="text-3xl font-bold text-gray-900">{reviewsCount || 0}</p>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <h3 className="text-gray-500 font-medium mb-2">Revenue</h3>
@@ -76,7 +84,7 @@ export default async function AdminDashboard() {
           <tbody className="divide-y divide-gray-100">
             {recentOrders?.map((order: any) => (
               <tr key={order.id} className="hover:bg-gray-50">
-                <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">#{order.id.slice(0,8)}</td>
+                <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">#{order.id.slice(0, 8)}</td>
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                   <p className="text-sm font-medium text-gray-900">{order.profiles?.full_name || 'Guest User'}</p>
                   <p className="text-xs text-gray-500">{order.profiles?.email || 'N/A'}</p>
@@ -84,9 +92,9 @@ export default async function AdminDashboard() {
                 <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{new Date(order.created_at).toLocaleDateString()}</td>
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                   <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize
-                    ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                      order.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                      'bg-gray-100 text-gray-800'}`}>
+                    ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'}`}>
                     {order.status}
                   </span>
                 </td>

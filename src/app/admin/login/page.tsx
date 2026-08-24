@@ -1,7 +1,16 @@
+import type { Metadata } from 'next'
 import { adminLogin } from './actions'
 import { PasswordInput } from '@/components/PasswordInput'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Admin Login',
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default async function AdminLoginPage({
   searchParams,
@@ -11,7 +20,7 @@ export default async function AdminLoginPage({
   const params = await searchParams;
 
   return (
-    <div className="flex-1 flex justify-center items-center p-4 bg-gray-900 h-screen">
+    <div className="flex-1 flex justify-center items-center p-4 bg-[#e0dafa] h-screen">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="p-8">
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Admin Access</h2>
