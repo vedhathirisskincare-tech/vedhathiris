@@ -34,7 +34,7 @@ const HOME_FAQS = [
 function FAQItem({ faq }: { faq: { q: string, a: string } }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div 
+    <div
       className="bg-white p-6 rounded-2xl shadow-sm border border-skin-primary/20 cursor-pointer hover:border-skin-primary/40 transition-colors"
       onClick={() => setIsOpen(!isOpen)}
     >
@@ -77,17 +77,17 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
       {/* Hero Section */}
       <section className="relative w-full min-h-[80vh] py-20 md:py-32 flex flex-col items-center justify-center text-center px-4 overflow-hidden isolate">
         {/* Video Background with Poster Fallback */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
           poster="/bg_video/bg_hero.webp"
           className="absolute inset-0 w-full h-full object-cover -z-20"
         >
-          <source src="/bg_video/bg_hero.mp4" type="video/mp4" />
+          <source src="/bg_video/bg_hero.webm" type="video/webm" />
         </video>
-        
+
         {/* Overlay for text readability */}
         <div className="absolute inset-0 bg-skin-bg/40 -z-10 pointer-events-none" />
 
@@ -108,7 +108,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
             Experience the finest herbal skincare in Chennai. Handcrafted cold-processed soaps, authentic herbal hair oils, and natural shampoos made with pure organic botanicals.
           </p>
           <Link href="/products">
-            <motion.button 
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-skin-bold text-skin-white px-10 py-4 rounded-full font-sans font-bold text-lg tracking-wide shadow-md transition-all"
@@ -147,27 +147,27 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { 
-              title: "Natural & Handmade Soaps", 
+            {
+              title: "Natural & Handmade Soaps",
               desc: "Cold-processed herbal soap in Chennai enriched with red sandalwood, neem, and saffron.",
-              path: "/products?category=Soap", 
-              icon: Droplet 
+              path: "/products?category=Soap",
+              icon: Droplet
             },
-            { 
-              title: "Herbal Hair Shampoos", 
+            {
+              title: "Herbal Hair Shampoos",
               desc: "Natural hair shampoo in Chennai free from sulfates, parabens, and silicones.",
-              path: "/products?category=Shampoo", 
-              icon: Waves 
+              path: "/products?category=Shampoo",
+              icon: Waves
             },
-            { 
-              title: "Natural Hair Oils & Elixirs", 
+            {
+              title: "Natural Hair Oils & Elixirs",
               desc: "Pure herbal hair oil in Chennai for deep nourishment and natural hair care.",
-              path: "/products?category=Hair Oil", 
-              icon: FlaskConical 
+              path: "/products?category=Hair Oil",
+              icon: FlaskConical
             },
           ].map((cat, idx) => (
             <Link key={idx} href={cat.path}>
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -8 }}
                 className="bg-skin-white rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl transition-all border border-skin-primary/30 h-full"
               >
@@ -187,7 +187,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
       <section className="w-full py-6 bg-skin-bold text-skin-white overflow-hidden border-y border-skin-primary/30 flex items-center">
         <motion.div
           className="flex whitespace-nowrap gap-8"
-          animate={{ x: [0, "-50%"] }} 
+          animate={{ x: [0, "-50%"] }}
           transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
         >
           <span className="font-sans font-medium text-lg tracking-wider">
@@ -213,7 +213,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
               </span>
             </Link>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {bestSellers.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -289,21 +289,21 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
               { id: 3, videoSrc: "/testi/t3.webm", name: "Priya D. (Chennai)", rating: 5, quote: "Pure herbal ingredients! The natural aroma is therapeutic and authentic." },
               { id: 4, videoSrc: "/testi/t4.webm", name: "Karthik M. (Chennai)", rating: 5, quote: "Excellent quality and handmade care. Highly recommend the shampoo bar!" }
             ].map((testi) => (
-              <motion.div 
+              <motion.div
                 key={testi.id}
                 whileHover={{ scale: 1.03 }}
                 className="relative aspect-[9/16] w-full rounded-3xl overflow-hidden bg-black border border-skin-primary/30 shadow-md hover:shadow-2xl transition-all duration-300 group"
               >
-                <video 
+                <video
                   src={testi.videoSrc}
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline 
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
-                
+
                 <div className="absolute bottom-4 left-4 right-4 z-10 text-white flex flex-col gap-2 pointer-events-none">
                   <div className="flex gap-0.5 text-amber-400 text-xs select-none">
                     {"★".repeat(testi.rating)}
@@ -328,7 +328,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
         </div>
         <motion.div
           className="flex whitespace-nowrap gap-8 md:gap-16 items-center w-max"
-          animate={{ x: ["0%", "-50%"] }} 
+          animate={{ x: ["0%", "-50%"] }}
           transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
         >
           {/* Group 1 */}
