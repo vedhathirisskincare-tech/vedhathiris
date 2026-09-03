@@ -142,22 +142,37 @@ export default async function InvoicePage({
           </table>
 
           {/* Summary */}
-          <div className="flex justify-end border-t border-gray-200 pt-6">
-            <div className="w-full max-w-sm space-y-3">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>₹{order.total_amount}</span>
+          {(() => {
+            const itemsSubtotal = order.order_items?.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) || order.total_amount;
+            const discount = order.discount_amount || (order.coupon_code ? Math.max(0, itemsSubtotal - order.total_amount) : 0);
+
+            return (
+              <div className="flex justify-end border-t border-gray-200 pt-6">
+                <div className="w-full max-w-sm space-y-3">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span>₹{itemsSubtotal}</span>
+                  </div>
+
+                  {discount > 0 && (
+                    <div className="flex justify-between text-emerald-600 font-medium">
+                      <span>Discount {order.coupon_code ? `(${order.coupon_code})` : ''}</span>
+                      <span>-₹{discount}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-gray-600">
+                    <span>Tax (0%)</span>
+                    <span>₹0</span>
+                  </div>
+                  <div className="flex justify-between text-xl font-bold text-gray-900 pt-3 border-t border-gray-100">
+                    <span>Total Paid</span>
+                    <span>₹{order.total_amount}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax (0%)</span>
-                <span>₹0</span>
-              </div>
-              <div className="flex justify-between text-xl font-bold text-gray-900 pt-3 border-t border-gray-100">
-                <span>Total</span>
-                <span>₹{order.total_amount}</span>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
           
           {/* Footer */}
           <div className="mt-16 pt-8 border-t border-gray-100 text-center text-gray-500 text-sm print:mt-8">

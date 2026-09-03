@@ -57,6 +57,9 @@ function QueryParamToastHandler({ toast }: { toast: ToastContextType["toast"] })
       offer_success: { message: "Promotional offer bar updated successfully.", type: "success" },
       category_offer_success: { message: "Category discounts updated successfully.", type: "success" },
       payment_success: { message: "Payment verified! Your order has been placed.", type: "success" },
+      coupon_created: { message: "Promo coupon created successfully!", type: "success" },
+      coupon_updated: { message: "Promo coupon updated successfully!", type: "success" },
+      coupon_deleted: { message: "Promo coupon deleted successfully.", type: "info" },
     };
 
     const match = toastMessages[toastType];

@@ -285,3 +285,118 @@ export async function deleteReview(id: string) {
   revalidatePath('/products')
   revalidatePath('/')
 }
+
+// Order Delete Action
+export async function deleteOrder(id: string) {
+  const supabase = getAdminSupabase()
+
+  // 1. Delete associated order items
+  const { error: itemsError } = await supabase
+    .from('order_items')
+    .delete()
+    .eq('order_id', id)
+
+  if (itemsError) {
+    console.warn('Could not delete order_items explicitly (may be cascading):', itemsError.message)
+  }
+
+  // 2. Delete the order
+  const { error: orderError } = await supabase
+    .from('orders')
+    .delete()
+    .eq('id', id)
+
+  if (orderError) throw new Error(orderError.message)
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/orders')
+  revalidatePath('/profile')
+  return { success: true }
+}
+
+// Coupon / Promo Code Actions
+export async function createCoupon(formData: FormData) {
+  const supabase = getAdminSupabase()
+
+  const code = (formData.get('code')?.toString() || '').trim().toUpperCase()
+  const description = formData.get('description')?.toString() || ''
+  const discount_type = (formData.get('discount_type')?.toString() || 'percentage') as 'percentage' | 'flat'
+  const discount_value = Number(formData.get('discount_value') || 0)
+  const min_order_amount = Number(formData.get('min_order_amount') || 0)
+  const maxDiscountRaw = formData.get('max_discount_amount')?.toString()
+  const max_discount_amount = maxDiscountRaw ? Number(maxDiscountRaw) : null
+  const is_active = formData.get('is_active') === 'on' || formData.get('is_active') === 'true'
+
+  if (!code) throw new Error('Coupon code is required')
+  if (discount_value <= 0) throw new Error('Discount value must be greater than 0')
+
+  const coupon = {
+    code,
+    description,
+    discount_type,
+    discount_value,
+    min_order_amount,
+    max_discount_amount,
+    is_active,
+  }
+
+  const { error } = await supabase.from('coupons').insert([coupon])
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/admin/coupons')
+  revalidatePath('/')
+  redirect('/admin/coupons?toast=coupon_created')
+}
+
+export async function updateCoupon(id: string, formData: FormData) {
+  const supabase = getAdminSupabase()
+
+  const code = (formData.get('code')?.toString() || '').trim().toUpperCase()
+  const description = formData.get('description')?.toString() || ''
+  const discount_type = (formData.get('discount_type')?.toString() || 'percentage') as 'percentage' | 'flat'
+  const discount_value = Number(formData.get('discount_value') || 0)
+  const min_order_amount = Number(formData.get('min_order_amount') || 0)
+  const maxDiscountRaw = formData.get('max_discount_amount')?.toString()
+  const max_discount_amount = maxDiscountRaw ? Number(maxDiscountRaw) : null
+  const is_active = formData.get('is_active') === 'on' || formData.get('is_active') === 'true'
+
+  if (!code) throw new Error('Coupon code is required')
+
+  const coupon = {
+    code,
+    description,
+    discount_type,
+    discount_value,
+    min_order_amount,
+    max_discount_amount,
+    is_active,
+  }
+
+  const { error } = await supabase.from('coupons').update(coupon).eq('id', id)
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/admin/coupons')
+  revalidatePath('/')
+  redirect('/admin/coupons?toast=coupon_updated')
+}
+
+export async function toggleCouponStatus(id: string, is_active: boolean) {
+  const supabase = getAdminSupabase()
+  const { error } = await supabase.from('coupons').update({ is_active }).eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/coupons')
+  revalidatePath('/')
+  return { success: true }
+}
+
+export async function deleteCoupon(id: string) {
+  const supabase = getAdminSupabase()
+  const { error } = await supabase.from('coupons').delete().eq('id', id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/coupons')
+  revalidatePath('/')
+  return { success: true }
+}
+

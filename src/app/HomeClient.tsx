@@ -139,6 +139,47 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
         </div>
       </section>
 
+      {/* Best Sellers */}
+      <section className="w-full py-24 px-6 bg-skin-primary/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="font-serif text-4xl text-skin-bold mb-4">Chennai's Favorite Natural Formulations</h2>
+              <p className="font-sans text-skin-primary text-lg">Our top-rated herbal soaps, shampoos, and hair oils loved by customers.</p>
+            </div>
+            <Link href="/products" className="hidden md:block">
+              <span className="font-sans text-skin-bold font-bold border-b border-skin-bold pb-1 hover:text-skin-bold/70 transition-colors">
+                View All Products
+              </span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {bestSellers.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+
+      {/* Marquee Section */}
+      <section className="w-full py-6 bg-skin-bold text-skin-white overflow-hidden border-y border-skin-primary/30 flex items-center">
+        <motion.div
+          className="flex whitespace-nowrap gap-8"
+          animate={{ x: [0, "-50%"] }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
+        >
+          <span className="font-sans font-medium text-lg tracking-wider">
+            🌿 Natural Soap in Chennai • Handmade Herbal Soap • Herbal Skincare Products in Chennai • Natural Hair Oil in Chennai • Herbal Hair Shampoo • Delivery Across Chennai & Tamil Nadu • 100% Chemical-Free & Cruelty-Free 🌿
+          </span>
+          <span className="font-sans font-medium text-lg tracking-wider pr-8">
+            🌿 Natural Soap in Chennai • Handmade Herbal Soap • Herbal Skincare Products in Chennai • Natural Hair Oil in Chennai • Herbal Hair Shampoo • Delivery Across Chennai & Tamil Nadu • 100% Chemical-Free & Cruelty-Free 🌿
+          </span>
+        </motion.div>
+      </section>
+
       {/* Category Blocks */}
       <section className="w-full py-24 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-16">
@@ -183,44 +224,36 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
         </div>
       </section>
 
-      {/* Marquee Section */}
-      <section className="w-full py-6 bg-skin-bold text-skin-white overflow-hidden border-y border-skin-primary/30 flex items-center">
+      {/* Label Carousel */}
+      <section className="w-full py-16 overflow-hidden bg-white border-y border-skin-primary/20">
+        <div className="text-center mb-10">
+          <h2 className="font-serif text-3xl text-skin-bold">Our Quality Labels</h2>
+        </div>
         <motion.div
-          className="flex whitespace-nowrap gap-8"
-          animate={{ x: [0, "-50%"] }}
-          transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
+          className="flex whitespace-nowrap gap-8 md:gap-16 items-center w-max"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
         >
-          <span className="font-sans font-medium text-lg tracking-wider">
-            🌿 Natural Soap in Chennai • Handmade Herbal Soap • Herbal Skincare Products in Chennai • Natural Hair Oil in Chennai • Herbal Hair Shampoo • Delivery Across Chennai & Tamil Nadu • 100% Chemical-Free & Cruelty-Free 🌿
-          </span>
-          <span className="font-sans font-medium text-lg tracking-wider pr-8">
-            🌿 Natural Soap in Chennai • Handmade Herbal Soap • Herbal Skincare Products in Chennai • Natural Hair Oil in Chennai • Herbal Hair Shampoo • Delivery Across Chennai & Tamil Nadu • 100% Chemical-Free & Cruelty-Free 🌿
-          </span>
+          {/* Group 1 */}
+          <div className="flex gap-8 md:gap-16 items-center">
+            <img src="/l1.webp" alt="Handmade Natural Soap Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l2.webp" alt="Herbal Skincare Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l3.webp" alt="Natural Hair Oil Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l4.webp" alt="Herbal Shampoo Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l5.webp" alt="Organic Skincare Certification Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+          </div>
+          {/* Group 2 for seamless loop */}
+          <div className="flex gap-8 md:gap-16 items-center">
+            <img src="/l1.webp" alt="Handmade Natural Soap Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l2.webp" alt="Herbal Skincare Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l3.webp" alt="Natural Hair Oil Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l4.webp" alt="Herbal Shampoo Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+            <img src="/l5.webp" alt="Organic Skincare Certification Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
+          </div>
         </motion.div>
       </section>
 
-      {/* Best Sellers */}
-      <section className="w-full py-24 px-6 bg-skin-primary/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="font-serif text-4xl text-skin-bold mb-4">Chennai's Favorite Natural Formulations</h2>
-              <p className="font-sans text-skin-primary text-lg">Our top-rated herbal soaps, shampoos, and hair oils loved by customers.</p>
-            </div>
-            <Link href="/products" className="hidden md:block">
-              <span className="font-sans text-skin-bold font-bold border-b border-skin-bold pb-1 hover:text-skin-bold/70 transition-colors">
-                View All Products
-              </span>
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {bestSellers.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* SEO Feature Block: Chennai Craftsmanship */}
       <section className="w-full py-20 px-6 max-w-7xl mx-auto bg-white rounded-3xl border border-skin-primary/30 my-12 shadow-sm">
@@ -321,34 +354,7 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
         </div>
       </section>
 
-      {/* Label Carousel */}
-      <section className="w-full py-16 overflow-hidden bg-white border-y border-skin-primary/20">
-        <div className="text-center mb-10">
-          <h2 className="font-serif text-3xl text-skin-bold">Our Quality Labels</h2>
-        </div>
-        <motion.div
-          className="flex whitespace-nowrap gap-8 md:gap-16 items-center w-max"
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
-        >
-          {/* Group 1 */}
-          <div className="flex gap-8 md:gap-16 items-center">
-            <img src="/l1.webp" alt="Handmade Natural Soap Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l2.webp" alt="Herbal Skincare Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l3.webp" alt="Natural Hair Oil Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l4.webp" alt="Herbal Shampoo Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l5.webp" alt="Organic Skincare Certification Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-          </div>
-          {/* Group 2 for seamless loop */}
-          <div className="flex gap-8 md:gap-16 items-center">
-            <img src="/l1.webp" alt="Handmade Natural Soap Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l2.webp" alt="Herbal Skincare Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l3.webp" alt="Natural Hair Oil Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l4.webp" alt="Herbal Shampoo Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-            <img src="/l5.webp" alt="Organic Skincare Certification Label" className="h-32 w-32 md:h-48 md:w-48 object-contain rounded-full shadow-md border border-skin-primary/10 bg-white" />
-          </div>
-        </motion.div>
-      </section>
+
 
       {/* FAQ Section */}
       <section className="w-full py-24 px-6 max-w-4xl mx-auto">

@@ -31,8 +31,11 @@ export async function createRazorpayOrder(amount: number) {
   try {
     const { instance, keyId } = getRazorpayInstance();
 
+    // Ensure minimum 1 INR for Razorpay order
+    const safeAmount = Math.max(1, amount);
+
     const options = {
-      amount: Math.round(amount * 100), // amount in smallest currency unit (paise)
+      amount: Math.round(safeAmount * 100), // amount in smallest currency unit (paise)
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,
     };
@@ -56,6 +59,10 @@ export async function verifyPaymentAndSaveOrder(
     customer_name: string;
     contact_number: string;
     shipping_address: string;
+  },
+  couponInfo?: {
+    coupon_code?: string | null;
+    discount_amount?: number;
   }
 ) {
   try {
@@ -79,20 +86,42 @@ export async function verifyPaymentAndSaveOrder(
     const adminSupabase = getAdminSupabase();
 
     // 1. Create Order
-    const { data: order, error: orderError } = await adminSupabase
+    const orderPayload: any = {
+      user_id: user?.id || null, // Allow anonymous orders if user not logged in
+      total_amount: totalAmount,
+      razorpay_order_id: paymentData.razorpay_order_id,
+      razorpay_payment_id: paymentData.razorpay_payment_id,
+      status: 'completed',
+      customer_name: deliveryInfo?.customer_name || null,
+      contact_number: deliveryInfo?.contact_number || null,
+      shipping_address: deliveryInfo?.shipping_address || null,
+    };
+
+    if (couponInfo?.coupon_code) {
+      orderPayload.coupon_code = couponInfo.coupon_code;
+    }
+    if (typeof couponInfo?.discount_amount === 'number') {
+      orderPayload.discount_amount = couponInfo.discount_amount;
+    }
+
+    let { data: order, error: orderError } = await adminSupabase
       .from('orders')
-      .insert({
-        user_id: user?.id || null, // Allow anonymous orders if user not logged in
-        total_amount: totalAmount,
-        razorpay_order_id: paymentData.razorpay_order_id,
-        razorpay_payment_id: paymentData.razorpay_payment_id,
-        status: 'completed',
-        customer_name: deliveryInfo?.customer_name || null,
-        contact_number: deliveryInfo?.contact_number || null,
-        shipping_address: deliveryInfo?.shipping_address || null,
-      })
+      .insert(orderPayload)
       .select()
       .single();
+
+    // Fallback if coupon_code column is not yet present in schema cache
+    if (orderError && (orderError.message.includes('coupon_code') || orderError.message.includes('discount_amount'))) {
+      delete orderPayload.coupon_code;
+      delete orderPayload.discount_amount;
+      const fallbackResult = await adminSupabase
+        .from('orders')
+        .insert(orderPayload)
+        .select()
+        .single();
+      order = fallbackResult.data;
+      orderError = fallbackResult.error;
+    }
 
     if (orderError) throw new Error(`Order Creation Failed: ${orderError.message}`);
 

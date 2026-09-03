@@ -17,15 +17,22 @@ export const metadata: Metadata = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; redirect?: string }>
 }) {
   const params = await searchParams;
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
+    if (params.redirect) {
+      redirect(params.redirect)
+    }
     redirect('/profile')
   }
+
+  const loginHref = params.redirect
+    ? `/login?redirect=${encodeURIComponent(params.redirect)}`
+    : '/login'
 
   return (
     <div className="h-[100dvh] w-full flex justify-center items-center p-4 md:p-8 bg-violet-50 overflow-hidden">
@@ -52,6 +59,9 @@ export default async function SignupPage({
           )}
 
           <form action={signup} className="space-y-4">
+            {params.redirect && (
+              <input type="hidden" name="redirectTo" value={params.redirect} />
+            )}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="fullName">
@@ -118,7 +128,7 @@ export default async function SignupPage({
           
           <div className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{' '}
-            <Link href="/login" className="text-violet-600 hover:underline font-medium">
+            <Link href={loginHref} className="text-violet-600 hover:underline font-medium">
               Log in here
             </Link>
           </div>

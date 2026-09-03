@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Product } from '@/components/ProductCard'
+import type { Coupon } from '@/app/actions/coupon'
 
 export interface CartItem extends Product {
   quantity: number
@@ -9,10 +10,12 @@ export interface CartItem extends Product {
 interface CartState {
   items: CartItem[]
   isOpen: boolean
+  appliedCoupon: Coupon | null
   setIsOpen: (isOpen: boolean) => void
   addItem: (product: Product) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
+  setAppliedCoupon: (coupon: Coupon | null) => void
   clearCart: () => void
 }
 
@@ -21,6 +24,7 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       isOpen: false,
+      appliedCoupon: null,
       setIsOpen: (isOpen) => set({ isOpen }),
       addItem: (product) =>
         set((state) => {
@@ -46,7 +50,8 @@ export const useCartStore = create<CartState>()(
             item.id === productId ? { ...item, quantity: Math.max(1, quantity) } : item
           ),
         })),
-      clearCart: () => set({ items: [] }),
+      setAppliedCoupon: (coupon) => set({ appliedCoupon: coupon }),
+      clearCart: () => set({ items: [], appliedCoupon: null }),
     }),
     {
       name: 'cart-storage',

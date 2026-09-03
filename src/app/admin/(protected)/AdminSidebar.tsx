@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Star, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Star, Ticket, ChevronLeft, ChevronRight } from 'lucide-react'
 import { adminLogout } from '../login/actions'
 
 export function AdminSidebar() {
@@ -14,6 +14,7 @@ export function AdminSidebar() {
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
     { href: '/admin/products', label: 'Products', icon: Package },
+    { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
     { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/enquiries', label: 'Enquiries', icon: Mail },
     { href: '/admin/offer', label: 'Offers', icon: Tag },

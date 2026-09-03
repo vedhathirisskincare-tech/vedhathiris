@@ -1,5 +1,15 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { DeliveryStatusSelect } from '../DeliveryStatusSelect'
+import { DeleteOrderButton } from './DeleteOrderButton'
+import { Tag } from 'lucide-react'
+
+export const metadata = {
+  title: 'Manage Orders | Admin Panel',
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default async function AdminOrdersPage() {
   // Use service role key to bypass RLS because admin is authenticated via custom admin_session cookie
@@ -38,22 +48,24 @@ export default async function AdminOrdersPage() {
       <table className="w-full text-left border-collapse">
         <thead className="bg-gray-50 border-b">
           <tr>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Order ID</th>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Customer</th>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Delivery Info</th>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Date</th>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Payment</th>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Amount</th>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Delivery Status</th>
-            <th className="px-4 md:px-6 py-4 font-medium text-gray-600 text-right whitespace-nowrap">Actions</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Order ID</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Customer</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Delivery Info</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Date</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Payment</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Amount</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Delivery Status</th>
+            <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider text-right whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {ordersArray.map((order: any) => (
-            <tr key={order.id} className="hover:bg-gray-50">
-              <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">#{order.id.slice(0,8)}</td>
+            <tr key={order.id} className="hover:bg-gray-50/70 transition-colors">
+              <td className="px-4 md:px-6 py-4 text-sm font-mono font-medium text-gray-600 whitespace-nowrap">
+                #{order.id.slice(0, 8)}
+              </td>
               <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                <p className="text-sm font-medium text-gray-900">{order.customer_name || order.profiles?.full_name || 'Guest User'}</p>
+                <p className="text-sm font-semibold text-gray-900">{order.customer_name || order.profiles?.full_name || 'Guest User'}</p>
                 <p className="text-xs text-gray-500">{order.profiles?.email || 'N/A'}</p>
               </td>
               <td className="px-4 md:px-6 py-4 whitespace-nowrap">
@@ -62,21 +74,36 @@ export default async function AdminOrdersPage() {
               </td>
               <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{new Date(order.created_at).toLocaleDateString()}</td>
               <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
                   ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
                     order.status === 'completed' ? 'bg-green-100 text-green-800' : 
                     'bg-gray-100 text-gray-800'}`}>
                   {order.status}
                 </span>
               </td>
-              <td className="px-4 md:px-6 py-4 text-sm font-medium whitespace-nowrap">₹{order.total_amount}</td>
+              <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                <p className="text-sm font-bold text-gray-900">₹{order.total_amount}</p>
+                {order.coupon_code && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded font-medium mt-0.5">
+                    <Tag className="w-3 h-3" /> {order.coupon_code} {order.discount_amount ? `(-₹${order.discount_amount})` : ''}
+                  </span>
+                )}
+              </td>
               <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                 <DeliveryStatusSelect orderId={order.id} initialStatus={order.delivery_status} />
               </td>
               <td className="px-4 md:px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                <a href={`/invoice/${order.id}`} target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 transition-colors">
-                  Invoice
-                </a>
+                <div className="flex items-center justify-end gap-3">
+                  <a
+                    href={`/invoice/${order.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-violet-600 hover:text-violet-800 hover:underline transition-colors font-semibold text-xs"
+                  >
+                    Invoice
+                  </a>
+                  <DeleteOrderButton orderId={order.id} orderNumber={order.id.slice(0, 8)} />
+                </div>
               </td>
             </tr>
           ))}
@@ -94,10 +121,10 @@ export default async function AdminOrdersPage() {
     <div>
       <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Manage Orders</h1>
       
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Orders</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Orders ({upcomingOrders.length})</h2>
       {renderTable(upcomingOrders, "No upcoming orders.")}
 
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Closed Orders</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Closed Orders ({closedOrders.length})</h2>
       {renderTable(closedOrders, "No closed orders yet.")}
     </div>
   )

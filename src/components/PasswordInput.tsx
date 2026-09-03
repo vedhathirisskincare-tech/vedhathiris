@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
-interface PasswordInputProps {
+interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name?: string
   id?: string
   placeholder?: string
@@ -17,12 +17,15 @@ export function PasswordInput({
   placeholder = '••••••••',
   className = '',
   required = false,
+  type,
+  ...rest
 }: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <div className="relative w-full">
       <input
+        {...rest}
         type={showPassword ? 'text' : 'password'}
         name={name}
         id={id}

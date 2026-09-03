@@ -1,5 +1,6 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { DeliveryStatusSelect } from './DeliveryStatusSelect'
+import { DeleteOrderButton } from './orders/DeleteOrderButton'
 
 export default async function AdminDashboard() {
   // Use service role key to bypass RLS because admin is authenticated via custom admin_session cookie
@@ -72,40 +73,48 @@ export default async function AdminDashboard() {
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Order ID</th>
-              <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Customer</th>
-              <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Date</th>
-              <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Payment</th>
-              <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Amount</th>
-              <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Delivery Status</th>
-              <th className="px-4 md:px-6 py-4 font-medium text-gray-600 whitespace-nowrap">Actions</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Order ID</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Customer</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Date</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Payment</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Amount</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap">Delivery Status</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {recentOrders?.map((order: any) => (
-              <tr key={order.id} className="hover:bg-gray-50">
-                <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">#{order.id.slice(0, 8)}</td>
+              <tr key={order.id} className="hover:bg-gray-50/70 transition-colors">
+                <td className="px-4 md:px-6 py-4 text-sm font-mono text-gray-600 whitespace-nowrap">#{order.id.slice(0, 8)}</td>
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                  <p className="text-sm font-medium text-gray-900">{order.profiles?.full_name || 'Guest User'}</p>
+                  <p className="text-sm font-semibold text-gray-900">{order.profiles?.full_name || 'Guest User'}</p>
                   <p className="text-xs text-gray-500">{order.profiles?.email || 'N/A'}</p>
                 </td>
                 <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{new Date(order.created_at).toLocaleDateString()}</td>
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize
                     ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       order.status === 'completed' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'}`}>
                     {order.status}
                   </span>
                 </td>
-                <td className="px-4 md:px-6 py-4 text-sm font-medium whitespace-nowrap">₹{order.total_amount}</td>
+                <td className="px-4 md:px-6 py-4 text-sm font-bold text-gray-900 whitespace-nowrap">₹{order.total_amount}</td>
                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                   <DeliveryStatusSelect orderId={order.id} initialStatus={order.delivery_status} />
                 </td>
-                <td className="px-4 md:px-6 py-4 text-sm font-medium whitespace-nowrap">
-                  <a href={`/invoice/${order.id}`} target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 transition-colors">
-                    Invoice
-                  </a>
+                <td className="px-4 md:px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                  <div className="flex items-center justify-end gap-3">
+                    <a
+                      href={`/invoice/${order.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-violet-600 hover:text-violet-800 hover:underline transition-colors text-xs font-semibold"
+                    >
+                      Invoice
+                    </a>
+                    <DeleteOrderButton orderId={order.id} orderNumber={order.id.slice(0, 8)} />
+                  </div>
                 </td>
               </tr>
             ))}
