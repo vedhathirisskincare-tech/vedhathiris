@@ -4,14 +4,14 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { 
-  ChevronDown, 
-  Heart, 
-  Shield, 
-  Leaf, 
-  Sparkles, 
-  Gift, 
-  Users, 
+import {
+  ChevronDown,
+  Heart,
+  Shield,
+  Leaf,
+  Sparkles,
+  Gift,
+  Users,
   Flame,
   ArrowRight
 } from "lucide-react";
@@ -77,7 +77,7 @@ const MILESTONES = [
 export default function AboutClient() {
   const [activeMilestone, setActiveMilestone] = useState(0);
   const targetRef = useRef<HTMLDivElement>(null);
-  
+
   // Custom scroll animations for parallax
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -88,7 +88,7 @@ export default function AboutClient() {
 
   return (
     <div className="flex-1 w-full bg-skin-bg overflow-x-hidden font-sans">
-      
+
       {/* SECTION 1: HERO SECTION */}
       <section className="relative w-full h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden select-none">
         {/* Full-screen Hero Banner image background */}
@@ -121,15 +121,7 @@ export default function AboutClient() {
             What began as a search for safe skincare for her husband and children became a journey to create natural products for every family.
           </p>
 
-          <button
-            onClick={() => {
-              document.getElementById("concern")?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="bg-skin-bold hover:bg-skin-bold/90 text-skin-white font-bold px-10 py-4 rounded-full text-lg tracking-wide shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2 group cursor-pointer"
-          >
-            Discover Our Journey 
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+
         </motion.div>
 
         {/* Scroll Indicator */}
@@ -193,7 +185,7 @@ export default function AboutClient() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
-          
+
           {/* Left Column: Image */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -203,7 +195,7 @@ export default function AboutClient() {
             className="relative w-full h-[450px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl border border-skin-primary/30"
           >
             <Image
-              src="/story/mother_concern.png"
+              src="/story/mother.png"
               alt="A mother examining commercial skincare product ingredients in a sunlit home kitchen"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -223,17 +215,17 @@ export default function AboutClient() {
             <div className="inline-flex items-center gap-2 text-skin-bold font-bold tracking-widest text-xs uppercase bg-white/50 px-4 py-1.5 rounded-full border border-skin-primary/20">
               <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" /> The Challenge
             </div>
-            
+
             <h2 className="font-serif text-4xl md:text-5xl font-bold text-skin-bold leading-tight">
               A Mother&apos;s Growing Concern
             </h2>
-            
+
             <p className="font-sans text-skin-bold/80 text-base md:text-lg leading-relaxed whitespace-pre-line">
-              It started simply—reading labels. Like millions of mothers around the world, our founder became increasingly alarmed by the complex list of chemicals printed on the backs of everyday family soaps and baby products. 
-              
+              It started simply—reading labels. Like millions of mothers around the world, our founder became increasingly alarmed by the complex list of chemicals printed on the backs of everyday family soaps and baby products.
+
               Parabens, synthetic foaming agents, artificial fragrances, and chemical petroleum-derivatives were standard additions, even in products marketed as &quot;gentle&quot; or &quot;pure.&quot;
             </p>
-            
+
             <div className="p-6 bg-white/40 border-l-4 border-skin-bold rounded-r-2xl backdrop-blur-xs">
               <p className="font-serif italic text-skin-bold text-lg">
                 &quot;My family was developing dry patches, rashes, and breakouts. I realized that to protect them, I had to stop looking for solutions on commercial shelves, and start creating them myself.&quot;
@@ -251,7 +243,7 @@ export default function AboutClient() {
       {/* SECTION 3: RETURNING TO NATURE */}
       <section ref={targetRef} className="relative w-full py-32 bg-skin-bold text-skin-white overflow-hidden">
         {/* Parallax background */}
-        <motion.div 
+        <motion.div
           style={{ y: yBg }}
           className="absolute inset-0 w-full h-[120%] -z-10 opacity-15"
         >
@@ -263,7 +255,7 @@ export default function AboutClient() {
             className="object-cover"
           />
         </motion.div>
-        
+
         <div className="max-w-6xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -283,7 +275,7 @@ export default function AboutClient() {
 
           {/* Timeline Process */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative mt-12">
-            
+
             {/* Visual connector line for desktop */}
             <div className="hidden md:block absolute top-[44px] left-[12%] right-[12%] h-0.5 bg-white/20 -z-10" />
 
@@ -329,7 +321,7 @@ export default function AboutClient() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
+
           {/* Silhouettes / Family values elements */}
           <div className="grid grid-cols-2 gap-4">
             {[
@@ -405,25 +397,23 @@ export default function AboutClient() {
             {MILESTONES.map((milestone, idx) => {
               const MilestoneIcon = milestone.icon;
               const isActive = activeMilestone === idx;
-              
+
               return (
-                <div 
+                <div
                   key={milestone.id}
                   className="relative pl-8 md:pl-12 group cursor-pointer"
                   onClick={() => setActiveMilestone(idx)}
                 >
                   {/* Timeline dot */}
-                  <div className={`absolute left-0 -translate-x-[11px] top-1.5 w-5 h-5 rounded-full border-2 border-skin-bg transition-all duration-300 ${
-                    isActive 
-                      ? "bg-skin-bold scale-125 shadow-md shadow-skin-bold/20" 
-                      : "bg-white border-skin-bold/40 group-hover:bg-skin-bold/60"
-                  }`} />
+                  <div className={`absolute left-0 -translate-x-[11px] top-1.5 w-5 h-5 rounded-full border-2 border-skin-bg transition-all duration-300 ${isActive
+                    ? "bg-skin-bold scale-125 shadow-md shadow-skin-bold/20"
+                    : "bg-white border-skin-bold/40 group-hover:bg-skin-bold/60"
+                    }`} />
 
                   {/* Absolute Year Badge for Desktop */}
                   <div className="hidden md:block absolute -left-[140px] top-1 text-right w-24">
-                    <span className={`font-sans font-bold text-sm tracking-wider uppercase transition-colors duration-300 ${
-                      isActive ? "text-skin-bold font-extrabold" : "text-skin-bold/50"
-                    }`}>
+                    <span className={`font-sans font-bold text-sm tracking-wider uppercase transition-colors duration-300 ${isActive ? "text-skin-bold font-extrabold" : "text-skin-bold/50"
+                      }`}>
                       {milestone.year}
                     </span>
                   </div>
@@ -437,7 +427,7 @@ export default function AboutClient() {
 
                   {/* Milestone Card */}
                   <motion.div
-                    animate={{ 
+                    animate={{
                       backgroundColor: isActive ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.4)",
                       borderColor: isActive ? "var(--color-skin-primary)" : "rgba(194, 164, 252, 0.2)"
                     }}
@@ -493,7 +483,7 @@ export default function AboutClient() {
                   {ing.benefit}
                 </p>
               </div>
-              
+
               <div className="mt-4 pt-3 border-t border-skin-primary/10 flex items-center justify-between text-[10px] text-skin-bold/50 uppercase font-bold tracking-wider">
                 <span>Botanical Raw</span>
                 <span>✓ Active</span>
@@ -506,7 +496,7 @@ export default function AboutClient() {
       {/* SECTION 7: TODAY */}
       <section className="relative py-28 px-6 bg-white/60 border-y border-skin-primary/30">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
-          
+
           {/* Left: Text detail */}
           <div className="flex-1 space-y-6">
             <span className="font-sans font-bold tracking-widest text-xs uppercase text-skin-bold/60">Vedhathiris Today</span>
@@ -516,7 +506,7 @@ export default function AboutClient() {
             <p className="font-sans text-skin-bold/80 text-lg leading-relaxed">
               Handcrafted with nature&apos;s finest ingredients and inspired by generations of traditional wisdom. What started in our home kitchen is now shipped to families all across the state, ensuring that everyone has access to pure, skin-safe personal care.
             </p>
-            
+
             <div className="flex flex-wrap gap-4 pt-4">
               <Link href="/products">
                 <button className="bg-skin-bold hover:bg-skin-bold/90 text-skin-white px-8 py-3.5 rounded-full font-bold text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer">
@@ -617,7 +607,7 @@ export default function AboutClient() {
             <div className="relative z-10 text-center max-w-2xl mx-auto space-y-6">
               <span className="text-4xl">🌸</span>
               <h3 className="font-sans font-bold tracking-widest text-xs uppercase text-skin-bold/60">A Message From Our Founder</h3>
-              
+
               <p className="font-serif italic text-2xl md:text-3xl text-skin-bold leading-relaxed">
                 &quot;Vedhathiris Skin Care was never started as a business. It began as a promise to my family. Today, that promise continues in every product we create.&quot;
               </p>

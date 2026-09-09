@@ -13,8 +13,7 @@ type User = {
   created_at: string
 }
 
-export function UsersClient({ initialUsers }: { initialUsers: User[] }) {
-  const [users] = useState<User[]>(initialUsers)
+export function UsersClient({ initialUsers: users }: { initialUsers: User[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)

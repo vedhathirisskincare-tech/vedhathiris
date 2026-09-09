@@ -21,10 +21,21 @@ export function ProductDetailClient({
   const { addItem } = useCartStore();
   const toast = useToast();
   
+  const rawImagesArray = Array.isArray(product.images)
+    ? product.images
+    : (typeof product.images === 'string' ? (() => { try { return JSON.parse(product.images); } catch { 
+        const imgStr = product.images as unknown as string;
+        if (imgStr.startsWith('{') && imgStr.endsWith('}')) {
+          return imgStr.slice(1, -1).split(',').map((s: string) => s.replace(/^"|"$/g, ''));
+        }
+        return []; 
+    } })() : []);
+  const imagesArray = rawImagesArray.filter((img: any) => typeof img === 'string' && img.trim().length > 0 && (img.startsWith('http') || img.startsWith('/')));
+    
   // Handle fallback to single image_url if images array is empty or undefined
-  const images = (product.images && product.images.length > 0) 
-    ? product.images 
-    : (product.image_url ? [product.image_url] : []);
+  const images = (imagesArray && imagesArray.length > 0) 
+    ? imagesArray 
+    : (product.image_url && typeof product.image_url === 'string' && (product.image_url.startsWith('http') || product.image_url.startsWith('/')) ? [product.image_url] : []);
     
   const [mainImage, setMainImage] = useState(images[0] || "");
 
@@ -62,7 +73,7 @@ export function ProductDetailClient({
             {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-4 overflow-x-auto py-2">
-                {images.map((img, idx) => (
+                {images.map((img: string, idx: number) => (
                   <button 
                     key={idx}
                     onClick={() => setMainImage(img)}
@@ -116,13 +127,15 @@ export function ProductDetailClient({
                     </p>
                   )}
                 </div>
-                <span className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium">
-                  In Stock ({product.stock} available)
-                </span>
+                {product.stock <= 0 && (
+                  <span className="text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium">
+                    Out of Stock
+                  </span>
+                )}
               </div>
 
-              <div className="prose prose-lg text-skin-primary mb-6">
-                <p className="text-lg leading-relaxed whitespace-pre-line">
+              <div className="prose prose-lg mb-6">
+                <p className="text-[#3C096C] text-lg leading-relaxed whitespace-pre-line opacity-100 font-medium">
                   {product.description} 
                 </p>
               </div>
@@ -143,15 +156,22 @@ export function ProductDetailClient({
 
               <div className="flex gap-4 mb-12">
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: product.stock > 0 ? 1.02 : 1 }}
+                  whileTap={{ scale: product.stock > 0 ? 0.98 : 1 }}
+                  disabled={product.stock <= 0}
                   onClick={() => {
-                    addItem(product);
-                    toast.success(`${product.name} added to cart!`);
+                    if (product.stock > 0) {
+                      addItem(product);
+                      toast.success(`${product.name} added to cart!`);
+                    }
                   }}
-                  className="flex-1 bg-skin-bold text-skin-white py-4 rounded-xl font-sans font-bold text-lg shadow-md hover:shadow-lg transition-all"
+                  className={`flex-1 py-4 rounded-xl font-sans font-bold text-lg shadow-md transition-all ${
+                    product.stock > 0 
+                      ? 'bg-skin-bold text-skin-white hover:shadow-lg' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+                  }`}
                 >
-                  Add to Cart
+                  {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </motion.button>
               </div>
 

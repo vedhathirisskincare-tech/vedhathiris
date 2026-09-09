@@ -7,7 +7,7 @@ import { ProductCard, Product } from "@/components/ProductCard";
 export function ProductsListClient({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
-  
+
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [activeSubcategory, setActiveSubcategory] = useState<string>("All");
 
@@ -19,7 +19,7 @@ export function ProductsListClient({ products }: { products: Product[] }) {
   ];
 
   useEffect(() => {
-    if (categoryParam && ["Soap", "Shampoo", "Hair Oil"].includes(categoryParam)) {
+    if (categoryParam && ["Soap", "Shampoo", "Hair Oil", "Combo Packages"].includes(categoryParam)) {
       setActiveCategory(categoryParam);
       setActiveSubcategory("All");
     }
@@ -32,21 +32,21 @@ export function ProductsListClient({ products }: { products: Product[] }) {
 
   const filteredProducts = products.filter(p => {
     const isSoapProduct = soapSubcategories.includes(p.category) || p.category === "Soap";
-    
+
     if (activeCategory === "All") {
       return true;
     }
-    
+
     if (activeCategory === "Soap") {
       if (!isSoapProduct) return false;
       if (activeSubcategory === "All") return true;
       return p.category === activeSubcategory;
     }
-    
+
     return p.category === activeCategory;
   });
 
-  const categories = ["All", "Soap", "Shampoo", "Hair Oil"];
+  const categories = ["All", "Combo Packages", "Soap", "Shampoo", "Hair Oil"];
 
   return (
     <div className="flex flex-col md:flex-row gap-6 md:gap-10">
@@ -59,11 +59,10 @@ export function ProductsListClient({ products }: { products: Product[] }) {
               <button
                 key={cat}
                 onClick={() => handleCategoryChange(cat)}
-                className={`text-center md:text-left font-sans font-medium px-4 py-2 md:py-3 rounded-xl transition-colors whitespace-nowrap ${
-                  activeCategory === cat 
-                    ? "bg-skin-primary/30 text-skin-bold" 
+                className={`text-center md:text-left font-sans font-medium px-4 py-2 md:py-3 rounded-xl transition-colors whitespace-nowrap ${activeCategory === cat
+                    ? "bg-skin-primary/30 text-skin-bold"
                     : "bg-transparent text-skin-primary hover:bg-skin-primary/10"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -74,48 +73,7 @@ export function ProductsListClient({ products }: { products: Product[] }) {
 
       {/* Product Grid */}
       <div className="flex-1">
-        <div className="mb-6 bg-white p-6 rounded-2xl border border-skin-primary/20 shadow-sm">
-          {activeCategory === "Soap" && (
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
-                Natural & Handmade Soap in Chennai
-              </h2>
-              <p className="font-sans text-sm text-skin-bold/70">
-                Cold-processed herbal soap in Chennai enriched with red sandalwood, saffron, neem, and nourishing botanical oils.
-              </p>
-            </div>
-          )}
-          {activeCategory === "Shampoo" && (
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
-                Natural & Herbal Shampoo in Chennai
-              </h2>
-              <p className="font-sans text-sm text-skin-bold/70">
-                Gentle, sulfate-free natural hair shampoo in Chennai for root-to-tip scalp nourishment and luster.
-              </p>
-            </div>
-          )}
-          {activeCategory === "Hair Oil" && (
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
-                Natural Hair Oil & Hair Care in Chennai
-              </h2>
-              <p className="font-sans text-sm text-skin-bold/70">
-                Ayurvedic herbal hair oil in Chennai formulated with potent herbal infusions for intensive natural hair care.
-              </p>
-            </div>
-          )}
-          {activeCategory === "All" && (
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-skin-bold mb-1">
-                Handcrafted Natural Skincare in Chennai
-              </h2>
-              <p className="font-sans text-sm text-skin-bold/70">
-                Explore our full line of handmade soaps, herbal hair oils, and organic personal care products handcrafted in Chennai.
-              </p>
-            </div>
-          )}
-        </div>
+
 
         {activeCategory === "Soap" && (
           <div className="flex flex-wrap gap-2 pb-6 mb-2 overflow-x-auto no-scrollbar">
@@ -126,11 +84,10 @@ export function ProductsListClient({ products }: { products: Product[] }) {
                 <button
                   key={sub}
                   onClick={() => setActiveSubcategory(value)}
-                  className={`font-sans font-medium px-4 py-2 rounded-full border text-sm transition-all whitespace-nowrap ${
-                    isActive 
-                      ? "bg-skin-bold text-skin-white border-skin-bold shadow-sm" 
+                  className={`font-sans font-medium px-4 py-2 rounded-full border text-sm transition-all whitespace-nowrap ${isActive
+                      ? "bg-skin-bold text-skin-white border-skin-bold shadow-sm"
                       : "bg-white text-skin-primary border-skin-primary/30 hover:border-skin-primary"
-                  }`}
+                    }`}
                 >
                   {sub}
                 </button>
@@ -138,13 +95,13 @@ export function ProductsListClient({ products }: { products: Product[] }) {
             })}
           </div>
         )}
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
-        
+
         {filteredProducts.length === 0 && (
           <div className="w-full text-center py-20">
             <p className="font-sans text-xl text-skin-primary">No products found in this category.</p>

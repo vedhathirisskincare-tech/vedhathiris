@@ -6,8 +6,7 @@ import { createCoupon, toggleCouponStatus, deleteCoupon } from "../actions";
 import { useToast } from "@/components/Toast";
 import type { Coupon } from "@/app/actions/coupon";
 
-export function CouponClient({ initialCoupons }: { initialCoupons: Coupon[] }) {
-  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+export function CouponClient({ initialCoupons: coupons }: { initialCoupons: Coupon[] }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [discountType, setDiscountType] = useState<"percentage" | "flat">("percentage");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,15 +17,10 @@ export function CouponClient({ initialCoupons }: { initialCoupons: Coupon[] }) {
   const handleToggle = async (coupon: Coupon) => {
     try {
       const newStatus = !coupon.is_active;
-      setCoupons((prev) =>
-        prev.map((c) => (c.id === coupon.id ? { ...c, is_active: newStatus } : c))
-      );
       await toggleCouponStatus(coupon.id, newStatus);
       toast.success(`Coupon ${coupon.code} is now ${newStatus ? "Active" : "Inactive"}.`);
     } catch (err: any) {
       toast.error(err.message || "Failed to update coupon status.");
-      // Revert on error
-      setCoupons(initialCoupons);
     }
   };
 
@@ -34,7 +28,6 @@ export function CouponClient({ initialCoupons }: { initialCoupons: Coupon[] }) {
     setDeletingId(id);
     try {
       await deleteCoupon(id);
-      setCoupons((prev) => prev.filter((c) => c.id !== id));
       toast.success("Coupon deleted successfully.");
       setConfirmDeleteId(null);
     } catch (err: any) {

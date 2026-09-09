@@ -72,7 +72,7 @@ export default function Header() {
   const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";
 
   return (
-    <header className={`sticky top-0 z-40 w-full border-b border-gray-100 md:border-white/30 shadow-sm transition-colors duration-300 ${isMenuOpen ? "bg-white" : "bg-white md:bg-white/40 md:backdrop-blur-xl"}`}>
+    <header className={`sticky top-0 z-50 w-full border-b border-gray-100 md:border-white/30 shadow-sm transition-colors duration-300 ${isMenuOpen ? "bg-white" : "bg-white md:bg-white/40 md:backdrop-blur-xl"}`}>
       <div className="container mx-auto px-4 h-24 md:h-32 flex items-center justify-between">
         
         {/* Mobile Header Elements */}

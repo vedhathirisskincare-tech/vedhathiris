@@ -4,9 +4,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ProductCard, Product } from "@/components/ProductCard";
-import { ShieldCheck, Leaf, Heart, Sparkles, HandHeart, Droplet, Waves, FlaskConical, ChevronDown, MapPin, Award } from "lucide-react";
+import { ProductCard, Product, COMBO_DETAILS } from "@/components/ProductCard";
+import { ShieldCheck, Leaf, Heart, Sparkles, HandHeart, Droplet, Waves, FlaskConical, ChevronDown, MapPin, Award, ChevronLeft, ChevronRight } from "lucide-react";
 import { generateFAQSchema } from "@/utils/seo";
+import { useCartStore } from "@/store/cartStore";
+import { useToast } from "@/components/Toast";
 
 const HOME_FAQS = [
   {
@@ -63,7 +65,176 @@ function FAQItem({ faq }: { faq: { q: string, a: string } }) {
   );
 }
 
-export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
+function ComboCarousel({ comboPackages }: { comboPackages: Product[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const toast = useToast();
+  
+  if (!comboPackages || comboPackages.length === 0) return null;
+
+  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % comboPackages.length);
+  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + comboPackages.length) % comboPackages.length);
+
+  const product = comboPackages[currentIndex];
+  
+  // Parse images securely
+  const rawImagesArray = Array.isArray(product.images) 
+    ? product.images 
+    : (typeof product.images === 'string' ? (() => { try { return JSON.parse(product.images); } catch { 
+        const imgStr = product.images as unknown as string;
+        if (imgStr.startsWith('{') && imgStr.endsWith('}')) {
+          return imgStr.slice(1, -1).split(',').map((s:string) => s.replace(/^"|"$/g, ''));
+        }
+        return []; 
+    } })() : []);
+  const imagesArray = rawImagesArray.filter((img: any) => typeof img === 'string' && img.trim().length > 0 && (img.startsWith('http') || img.startsWith('/')));
+
+  const comboDetails = COMBO_DETAILS[product.name];
+
+  // Parse ingredients
+  const ingredients = comboDetails?.products || (product.ingredients && Array.isArray(product.ingredients) && product.ingredients.length > 0 
+    ? product.ingredients
+    : []);
+
+  const originalPrice = comboDetails?.original_price || product.original_price || product.price;
+  const savings = originalPrice > product.price 
+    ? originalPrice - product.price 
+    : 0;
+
+  return (
+    <div className="bg-white/60 backdrop-blur-xl border border-amber-200/50 rounded-3xl p-6 md:p-12 shadow-xl relative w-full pb-16">
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={currentIndex}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+        >
+          {/* Left: Deck Cards Style */}
+          <div className="relative w-full h-[350px] md:h-[450px] flex items-center justify-center group perspective-1000">
+            {imagesArray.length > 0 ? (
+              imagesArray.slice(0, 4).map((img: string, idx: number, arr: string[]) => {
+                const total = arr.length > 4 ? 4 : arr.length;
+                let transformClass = "";
+                
+                if (total === 1) {
+                  transformClass = "z-30 rotate-0 group-hover:scale-105";
+                } else if (total === 2) {
+                  // Symmetrical fan-out for 2 cards
+                  if (idx === 0) transformClass = "z-30 -rotate-[8deg] -translate-x-6 group-hover:-translate-x-16 group-hover:-rotate-[15deg] group-hover:-translate-y-2 group-hover:scale-105";
+                  if (idx === 1) transformClass = "z-20 rotate-[8deg] translate-x-6 translate-y-2 group-hover:translate-x-20 group-hover:translate-y-4 group-hover:rotate-[15deg]";
+                } else if (total === 3) {
+                  if (idx === 0) transformClass = "z-30 rotate-0 group-hover:-translate-y-6 group-hover:scale-105";
+                  if (idx === 1) transformClass = "z-20 rotate-[12deg] translate-x-16 translate-y-2 group-hover:translate-x-32 group-hover:-translate-y-2 group-hover:rotate-[20deg]";
+                  if (idx === 2) transformClass = "z-10 -rotate-[12deg] -translate-x-16 translate-y-2 group-hover:-translate-x-32 group-hover:-translate-y-2 group-hover:-rotate-[20deg]";
+                } else { // 4 images
+                  if (idx === 0) transformClass = "z-40 rotate-0 group-hover:-translate-y-6 group-hover:scale-105";
+                  if (idx === 1) transformClass = "z-30 rotate-[8deg] translate-x-10 translate-y-1 group-hover:translate-x-24 group-hover:-translate-y-4 group-hover:rotate-[15deg]";
+                  if (idx === 2) transformClass = "z-20 -rotate-[8deg] -translate-x-10 translate-y-1 group-hover:-translate-x-24 group-hover:-translate-y-4 group-hover:-rotate-[15deg]";
+                  if (idx === 3) transformClass = "z-10 rotate-[16deg] translate-x-20 translate-y-3 group-hover:translate-x-40 group-hover:translate-y-2 group-hover:rotate-[25deg]";
+                }
+
+                return (
+                  <div 
+                    key={idx}
+                    className={`absolute w-[70%] max-w-[280px] aspect-square rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.15)] border-[6px] border-white transition-all duration-700 ease-out ${transformClass}`}
+                  >
+                    <Image src={img} alt={`${product.name} - ${idx + 1}`} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+                  </div>
+                );
+              })
+            ) : (
+                <div className="text-6xl animate-pulse text-skin-primary/50">✨</div>
+            )}
+          </div>
+
+          {/* Right: Combo Info */}
+          <div className="flex flex-col justify-center text-left">
+            <h3 className="font-serif text-3xl md:text-5xl text-skin-bold mb-4 font-bold">{product.name}</h3>
+            
+            <div className="mb-6">
+              <p className="text-xs font-bold text-skin-primary uppercase tracking-wider mb-2">Combo Products:</p>
+              <div className="flex flex-wrap gap-2">
+                {ingredients.length > 0 ? ingredients.map((ing: string, i: number) => (
+                  <span key={i} className="bg-skin-bg border border-skin-primary/10 px-3 py-1.5 rounded-lg text-sm font-medium text-skin-bold shadow-sm">
+                    {ing}
+                  </span>
+                )) : (
+                  <span className="text-skin-primary/60 text-sm">Full curated set</span>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white border border-skin-primary/10 rounded-2xl p-6 mb-8 shadow-sm">
+              <div className="flex items-center gap-4 mb-2">
+                <span className="text-skin-primary text-sm uppercase tracking-wider font-semibold">Normal Price:</span>
+                <span className="text-skin-primary/60 line-through text-lg">₹{originalPrice}</span>
+              </div>
+              <div className="flex items-end gap-4 mb-2">
+                <span className="text-skin-bold text-sm uppercase tracking-wider font-bold mb-1">Offer Price:</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl md:text-5xl font-extrabold text-skin-bold">₹{product.price}</span>
+                  {savings > 0 && (
+                    <span className="text-green-700 font-bold bg-green-50 border border-green-100 px-3 py-1 rounded-full text-sm shadow-sm">
+                      Save ₹{savings}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                useCartStore.getState().addItem(product);
+                toast.success(`${product.name} added to cart!`);
+              }}
+              className="w-full sm:w-auto bg-skin-bold hover:bg-skin-primary text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors flex items-center justify-center shadow-md"
+              aria-label={`Add ${product.name} to cart`}
+            >
+              Add to Cart
+            </button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Navigation Buttons */}
+      {comboPackages.length > 1 && (
+        <>
+          <button 
+            onClick={handlePrev}
+            className="absolute left-0 top-[30%] lg:top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 bg-white hover:bg-skin-bg shadow-lg p-3 md:p-4 rounded-full border border-skin-primary/10 text-skin-primary transition-all hover:scale-110 z-40"
+            aria-label="Previous Combo"
+          >
+            <ChevronLeft size={28} />
+          </button>
+          <button 
+            onClick={handleNext}
+            className="absolute right-0 top-[30%] lg:top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 bg-white hover:bg-skin-bg shadow-lg p-3 md:p-4 rounded-full border border-skin-primary/10 text-skin-primary transition-all hover:scale-110 z-40"
+            aria-label="Next Combo"
+          >
+            <ChevronRight size={28} />
+          </button>
+          
+          {/* Dots indicator */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-40">
+            {comboPackages.map((_, idx) => (
+              <button 
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-skin-bold w-8' : 'bg-skin-primary/20 hover:bg-skin-primary/40 w-2'}`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function HomeClient({ bestSellers, comboPackages = [] }: { bestSellers: Product[], comboPackages?: Product[] }) {
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-skin-bg">
       {/* FAQ Schema for Search Engines */}
@@ -180,11 +351,80 @@ export function HomeClient({ bestSellers }: { bestSellers: Product[] }) {
         </motion.div>
       </section>
 
+      {/* Combo Packages */}
+      {comboPackages && comboPackages.length > 0 && (
+        <section className="relative w-full py-24 md:py-32 px-6 bg-skin-bg text-skin-bold overflow-hidden border-y border-skin-primary/10">
+          {/* Ambient Lights */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-skin-primary/5 blur-[140px]" />
+            <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-skin-primary/5 blur-[140px]" />
+            <div className="absolute top-[40%] left-[20%] w-[40%] h-[40%] rounded-full bg-white/20 blur-[120px]" />
+          </div>
+          
+          <div className="relative z-10 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+              <div className="max-w-2xl">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="inline-flex items-center gap-2 bg-skin-primary/10 backdrop-blur-md border border-skin-primary/20 px-5 py-2 rounded-full mb-6"
+                >
+                  <span className="font-sans font-extrabold tracking-widest uppercase text-xs text-skin-bold">
+                    ✨ Exclusive Rituals
+                  </span>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="mb-2"
+                >
+                  <h2 className="inline font-serif text-3xl md:text-4xl font-bold text-skin-bold leading-tight drop-shadow-sm mr-3">
+                    The Ultimate Formulations
+                  </h2>
+                  <p className="inline font-sans text-[#3C096C] text-lg md:text-xl font-medium leading-relaxed opacity-100">
+                    — Synergistic combinations of our finest botanical creations, thoughtfully paired to provide complete, holistic care for your body and hair.
+                  </p>
+                </motion.div>
+              </div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="hidden md:block"
+              >
+                <Link href="/products?category=Combo+Packages">
+                  <span className="group inline-flex items-center gap-3 font-sans text-skin-primary font-bold bg-white/50 backdrop-blur-sm border border-skin-primary/20 rounded-full px-8 py-4 hover:bg-white hover:text-skin-bold transition-all duration-300">
+                    Explore All Combos 
+                    <span className="group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
+                  </span>
+                </Link>
+              </motion.div>
+            </div>
+
+            <div className="w-full">
+              <ComboCarousel comboPackages={comboPackages} />
+            </div>
+            
+            <div className="mt-12 text-center md:hidden">
+              <Link href="/products?category=Combo+Packages">
+                <span className="inline-flex items-center justify-center w-full gap-2 font-sans text-skin-primary font-bold bg-white/50 backdrop-blur-sm border border-skin-primary/20 rounded-full px-6 py-4 hover:bg-white hover:text-skin-bold transition-all">
+                  Explore All Combos &rarr;
+                </span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Category Blocks */}
       <section className="w-full py-24 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="font-serif text-4xl text-skin-bold mb-4">Handcrafted Personal Care Categories</h2>
-          <p className="font-sans text-skin-primary text-lg">Pure, chemical-free wellness crafted locally in Chennai for the entire family.</p>
+          <p className="font-sans text-[#3C096C] text-lg font-medium opacity-100">Pure, chemical-free wellness crafted locally in Chennai for the entire family.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[

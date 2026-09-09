@@ -28,18 +28,22 @@ export default function CartDrawer() {
   const toast = useToast();
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const eligibleSubtotal = items
+    .filter((item) => item.category !== "Combo Packages")
+    .reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const hasComboPackages = items.some((item) => item.category === "Combo Packages");
 
   // Calculate discount based on applied coupon
   let discount = 0;
-  if (appliedCoupon && subtotal > 0) {
+  if (appliedCoupon && eligibleSubtotal > 0) {
     if (!appliedCoupon.min_order_amount || subtotal >= appliedCoupon.min_order_amount) {
       if (appliedCoupon.discount_type === "percentage") {
-        discount = Math.round((subtotal * appliedCoupon.discount_value) / 100);
+        discount = Math.round((eligibleSubtotal * appliedCoupon.discount_value) / 100);
         if (appliedCoupon.max_discount_amount && discount > appliedCoupon.max_discount_amount) {
           discount = appliedCoupon.max_discount_amount;
         }
       } else {
-        discount = Math.min(appliedCoupon.discount_value, subtotal);
+        discount = Math.min(appliedCoupon.discount_value, eligibleSubtotal);
       }
     }
   }
@@ -52,7 +56,10 @@ export default function CartDrawer() {
   
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [houseNo, setHouseNo] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [pincode, setPincode] = useState("");
 
   // Coupon UI states
   const [couponInput, setCouponInput] = useState("");
@@ -177,7 +184,7 @@ export default function CartDrawer() {
   const handleCheckout = async () => {
     if (items.length === 0) return;
     
-    if (!deliveryName.trim() || !deliveryPhone.trim() || !deliveryAddress.trim()) {
+    if (!deliveryName.trim() || !deliveryPhone.trim() || !houseNo.trim() || !street.trim() || !city.trim() || !pincode.trim()) {
       toast.error("Please fill in all delivery details before proceeding to payment.");
       return;
     }
@@ -230,19 +237,20 @@ export default function CartDrawer() {
         order_id: order.id,
         handler: async function (response: any) {
           // 4. Verify payment and save order on success
-          const result = await verifyPaymentAndSaveOrder(
-            {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            },
-            items,
-            finalTotal,
-            {
-              customer_name: deliveryName.trim(),
-              contact_number: deliveryPhone.trim(),
-              shipping_address: deliveryAddress.trim(),
-            },
+            const fullAddress = `${houseNo.trim()}\n${street.trim()}\n${city.trim()} - ${pincode.trim()}`;
+            const result = await verifyPaymentAndSaveOrder(
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              items,
+              finalTotal,
+              {
+                customer_name: deliveryName.trim(),
+                contact_number: deliveryPhone.trim(),
+                shipping_address: fullAddress,
+              },
             {
               coupon_code: appliedCoupon?.code || null,
               discount_amount: discount,
@@ -369,18 +377,54 @@ export default function CartDrawer() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1" htmlFor="deliveryAddress">
-                    Complete Shipping Address
-                  </label>
-                  <textarea
-                    id="deliveryAddress"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                  <label htmlFor="houseNo" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">House/Flat No.</label>
+                  <input
+                    type="text"
+                    id="houseNo"
+                    value={houseNo}
+                    onChange={(e) => setHouseNo(e.target.value)}
                     required
-                    rows={4}
-                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none text-sm text-gray-800 bg-gray-50/50 resize-none"
-                    placeholder="House/Flat No., Street, Landmark, City, State, Pincode"
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none text-sm text-gray-800 bg-gray-50/50"
+                    placeholder="E.g. Flat 101, Block A"
                   />
+                </div>
+                <div>
+                  <label htmlFor="street" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Street/Landmark</label>
+                  <input
+                    type="text"
+                    id="street"
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none text-sm text-gray-800 bg-gray-50/50"
+                    placeholder="E.g. MG Road, Near Metro Station"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="city" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">City</label>
+                    <input
+                      type="text"
+                      id="city"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      required
+                      className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none text-sm text-gray-800 bg-gray-50/50"
+                      placeholder="E.g. Chennai"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="pincode" className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Pincode</label>
+                    <input
+                      type="text"
+                      id="pincode"
+                      value={pincode}
+                      onChange={(e) => setPincode(e.target.value)}
+                      required
+                      className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none text-sm text-gray-800 bg-gray-50/50"
+                      placeholder="E.g. 600001"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -465,28 +509,35 @@ export default function CartDrawer() {
 
                     {/* Applied Coupon Card */}
                     {appliedCoupon ? (
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between animate-in fade-in duration-200">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                            <Tag className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-sm text-emerald-900">{appliedCoupon.code}</span>
-                              <span className="text-[10px] uppercase font-bold bg-emerald-200 text-emerald-800 px-1.5 py-0.5 rounded">Applied</span>
+                      <div className="space-y-2">
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between animate-in fade-in duration-200">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                              <Tag className="w-4 h-4" />
                             </div>
-                            <p className="text-xs text-emerald-700 mt-0.5">
-                              {discount > 0 ? `You saved ₹${discount} on this order!` : "Coupon applied"}
-                            </p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-sm text-emerald-900">{appliedCoupon.code}</span>
+                                <span className="text-[10px] uppercase font-bold bg-emerald-200 text-emerald-800 px-1.5 py-0.5 rounded">Applied</span>
+                              </div>
+                              <p className="text-xs text-emerald-700 mt-0.5">
+                                {discount > 0 ? `You saved ₹${discount} on this order!` : "Coupon applied"}
+                              </p>
+                            </div>
                           </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveCoupon}
+                            className="text-xs font-bold text-red-500 hover:text-red-700 bg-white px-2 py-1 rounded-lg border border-red-100 shadow-2xs hover:bg-red-50 cursor-pointer"
+                          >
+                            Remove
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={handleRemoveCoupon}
-                          className="text-xs font-bold text-red-500 hover:text-red-700 bg-white px-2 py-1 rounded-lg border border-red-100 shadow-2xs hover:bg-red-50 cursor-pointer"
-                        >
-                          Remove
-                        </button>
+                        {hasComboPackages && (
+                          <p className="text-[10px] text-amber-600 font-medium px-1">
+                            * Coupons are not applicable on Combo Packages.
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -519,7 +570,7 @@ export default function CartDrawer() {
                         {showCouponList && (
                           <div className="space-y-2 pt-2 animate-in slide-in-from-top-2 duration-200">
                             {availableCoupons.map((coupon) => {
-                              const isEligible = !coupon.min_order_amount || subtotal >= coupon.min_order_amount;
+                              const isEligible = (!coupon.min_order_amount || subtotal >= coupon.min_order_amount) && eligibleSubtotal > 0;
                               return (
                                 <div
                                   key={coupon.id}

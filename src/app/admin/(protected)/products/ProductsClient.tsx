@@ -17,8 +17,7 @@ type Product = {
   discount_percentage?: number
 }
 
-export function ProductsClient({ initialProducts }: { initialProducts: Product[] }) {
-  const [products] = useState<Product[]>(initialProducts)
+export function ProductsClient({ initialProducts: products }: { initialProducts: Product[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -177,6 +176,7 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
                     <option value="Super Luxury Collection">Super Luxury Collection</option>
                     <option value="Shampoo">Shampoo</option>
                     <option value="Hair Oil">Hair Oil</option>
+                    <option value="Combo Packages">Combo Packages</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">

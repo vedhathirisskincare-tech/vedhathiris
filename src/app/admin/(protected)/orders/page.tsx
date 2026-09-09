@@ -70,7 +70,7 @@ export default async function AdminOrdersPage() {
               </td>
               <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                 <p className="text-sm font-semibold text-gray-800">Phone: <span className="font-normal text-gray-600">{order.contact_number || order.profiles?.phone || 'N/A'}</span></p>
-                <p className="text-xs text-gray-500 max-w-xs truncate" title={order.shipping_address || 'N/A'}>{order.shipping_address || 'N/A'}</p>
+                <p className="text-xs text-gray-500 max-w-xs whitespace-pre-wrap" title={order.shipping_address || 'N/A'}>{order.shipping_address || 'N/A'}</p>
               </td>
               <td className="px-4 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{new Date(order.created_at).toLocaleDateString()}</td>
               <td className="px-4 md:px-6 py-4 whitespace-nowrap">

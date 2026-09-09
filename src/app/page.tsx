@@ -42,5 +42,14 @@ export default async function Home() {
     return p;
   });
 
-  return <HomeClient bestSellers={bestSellersWithRatings} />;
+  const comboPackages = products?.filter(p => p.category === "Combo Packages") || [];
+  const combosWithRatings = comboPackages.map(p => {
+    const sum = ratingSummary?.find(rs => rs.product_id === p.id);
+    if (sum) {
+      return { ...p, average_rating: sum.average_rating, review_count: sum.review_count };
+    }
+    return p;
+  });
+
+  return <HomeClient bestSellers={bestSellersWithRatings} comboPackages={combosWithRatings} />;
 }

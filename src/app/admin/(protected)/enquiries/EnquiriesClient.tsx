@@ -14,8 +14,7 @@ type Enquiry = {
   created_at: string
 }
 
-export function EnquiriesClient({ initialEnquiries }: { initialEnquiries: Enquiry[] }) {
-  const [enquiries, setEnquiries] = useState<Enquiry[]>(initialEnquiries)
+export function EnquiriesClient({ initialEnquiries: enquiries }: { initialEnquiries: Enquiry[] }) {
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const toast = useToast()
@@ -25,7 +24,6 @@ export function EnquiriesClient({ initialEnquiries }: { initialEnquiries: Enquir
       try {
         await deleteEnquiry(id)
         toast.success('Enquiry deleted successfully')
-        setEnquiries(enquiries.filter((e) => e.id !== id))
         if (selectedEnquiry?.id === id) {
           setIsModalOpen(false)
         }
