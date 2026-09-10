@@ -311,7 +311,7 @@ export function HomeClient({ bestSellers, comboPackages = [] }: { bestSellers: P
       </section>
 
       {/* Best Sellers */}
-      <section className="w-full py-24 px-6 bg-skin-primary/10">
+      <section className="w-full py-16 sm:py-24 px-3 sm:px-6 bg-skin-primary/10">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-12">
             <div>
@@ -325,7 +325,7 @@ export function HomeClient({ bestSellers, comboPackages = [] }: { bestSellers: P
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-1 md:gap-6">
             {bestSellers.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

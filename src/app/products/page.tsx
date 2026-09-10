@@ -48,8 +48,8 @@ export default async function ProductsPage() {
           __html: JSON.stringify(generateBreadcrumbSchema(breadcrumbs)),
         }}
       />
-      <div className="max-w-7xl mx-auto px-6">
-        <h1 className="font-serif text-5xl text-skin-bold mb-2">Natural Skincare & Handmade Soaps Collection</h1>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6">
+        <h1 className="font-serif text-3xl sm:text-5xl text-skin-bold mb-2">Natural Skincare & Handmade Soaps Collection</h1>
         <p className="font-sans text-skin-primary text-lg mb-12">Discover handcrafted natural soap in Chennai, herbal shampoo, and organic hair oil formulations.</p>
         
         <Suspense fallback={<div className="py-10 text-center font-sans font-medium text-skin-primary">Loading collection...</div>}>

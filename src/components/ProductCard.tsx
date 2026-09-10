@@ -103,15 +103,15 @@ export function ProductCard({ product }: ProductCardProps) {
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -5 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-skin-primary cursor-pointer h-full flex flex-col"
+        className="bg-white rounded-lg sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-skin-primary cursor-pointer h-full flex flex-col"
       >
-        <div className="relative w-full h-56 bg-skin-bg flex items-center justify-center p-6 shrink-0">
+        <div className="relative w-full h-36 sm:h-56 bg-skin-bg flex items-center justify-center p-1 sm:p-6 shrink-0">
           {product.category === "Combo Packages" && imagesArray.length > 1 ? (
             <div className="absolute inset-0 flex items-center justify-center">
               {imagesArray.slice(0, 3).map((img: string, idx: number) => (
                 <div
                   key={idx}
-                  className={`absolute w-[55%] max-w-[150px] aspect-square rounded-2xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.15)] border-4 border-white transition-all duration-500 ease-out ${idx === 0 ? "z-30 rotate-0 group-hover:-translate-y-3 group-hover:scale-105" :
+                  className={`absolute w-[55%] max-w-[150px] aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.15)] border-2 sm:border-4 border-white transition-all duration-500 ease-out ${idx === 0 ? "z-30 rotate-0 group-hover:-translate-y-3 group-hover:scale-105" :
                     idx === 1 ? "z-20 rotate-[12deg] translate-x-16 translate-y-1 group-hover:translate-x-24 group-hover:-translate-y-2 group-hover:rotate-[20deg]" :
                       "z-10 -rotate-[12deg] -translate-x-16 translate-y-1 group-hover:-translate-x-24 group-hover:-translate-y-2 group-hover:-rotate-[20deg]"
                     }`}
@@ -143,11 +143,11 @@ export function ProductCard({ product }: ProductCardProps) {
               ✨
             </motion.div>
           )}
-          <div className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-bold text-skin-bold shadow-sm border border-skin-primary z-40">
+          <div className="hidden sm:block absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-bold text-skin-bold shadow-sm border border-skin-primary z-40">
             {product.category}
           </div>
           {product.discount_percentage && product.discount_percentage > 0 ? (
-            <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-extrabold shadow-md z-40">
+            <div className="hidden sm:block absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-extrabold shadow-md z-40">
               {product.discount_percentage}% OFF
             </div>
           ) : null}
@@ -160,20 +160,22 @@ export function ProductCard({ product }: ProductCardProps) {
           ) : null}
         </div>
 
-        <div className="p-6 flex-1 flex flex-col justify-between">
+        <div className="px-1 py-1 sm:p-6 flex-1 flex flex-col justify-between">
           <div>
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="font-serif text-xl font-bold text-skin-bold leading-tight line-clamp-2 pr-2">
+            <div className="flex items-start justify-between mb-1 sm:mb-2">
+              <h3 className="font-serif text-[13px] sm:text-xl font-bold text-skin-bold leading-tight line-clamp-2 pr-1 sm:pr-2">
                 {product.name}
               </h3>
             </div>
-            
-            <p className="text-[#3C096C] font-sans text-sm line-clamp-2 min-h-[2.5rem] opacity-100 font-medium">
-              {product.description}
-            </p>
+
+            <div className="hidden sm:block">
+              <p className="text-[#3C096C] font-sans text-sm line-clamp-2 min-h-[2.5rem] opacity-100 font-medium">
+                {product.description}
+              </p>
+            </div>
 
             {/* Ingredients Section */}
-            <div className="flex flex-col mt-2 mb-1 flex-1 justify-start">
+            <div className="hidden sm:flex flex-col mt-2 mb-1 flex-1 justify-start">
               {product.category === "Combo Packages" && (
                 <p className="text-[10px] font-bold text-[#3C096C] uppercase tracking-wider mb-1.5 opacity-100">Includes:</p>
               )}
@@ -187,19 +189,19 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center justify-between mt-1 sm:mt-3">
             <div className="flex flex-col w-full">
               {product.category === "Combo Packages" ? (
-                <div className="flex flex-col items-center text-center w-full mt-1">
+                <div className="flex flex-col items-center text-center w-full mt-0.5">
                   <div className="flex flex-col items-center">
-                    <span className="text-[10px] text-skin-primary uppercase tracking-wider font-bold mb-0.5">Combo Offer:</span>
-                    <p className="text-skin-bold font-sans font-extrabold text-2xl leading-tight">
+                    <span className="hidden sm:inline text-[9px] sm:text-[10px] text-skin-primary uppercase tracking-wider font-bold mb-0.5">Combo Offer:</span>
+                    <p className="text-skin-bold font-sans font-extrabold text-[15px] sm:text-2xl leading-tight">
                       ₹{product.price}
                     </p>
                   </div>
-                  <div className="flex items-center justify-center mt-1">
+                  <div className="flex items-center justify-center mt-0.5 sm:mt-1">
                     {savings > 0 && (
-                      <span className="text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded text-[9px] uppercase tracking-wider border border-green-100">
+                      <span className="hidden sm:inline-block text-green-700 font-bold bg-green-50 px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[9px] uppercase tracking-wider border border-green-100">
                         Save ₹{savings}
                       </span>
                     )}
@@ -209,54 +211,36 @@ export function ProductCard({ product }: ProductCardProps) {
                 <>
                   {product.original_price && product.original_price > product.price ? (
                     <div className="flex items-center gap-1 mb-0.5">
-                      <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Original Price:</span>
-                      <span className="line-through text-xs font-semibold text-gray-400">
+                      <span className="hidden sm:inline text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Original Price:</span>
+                      <span className="line-through text-[9px] sm:text-xs font-semibold text-gray-400">
                         ₹{product.original_price}
                       </span>
                     </div>
                   ) : null}
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-[#3C096C] uppercase tracking-wider font-bold mb-0.5 opacity-100">Price:</span>
-                    <p className="text-skin-bold font-sans font-extrabold text-xl leading-tight">
+                    <span className="hidden sm:inline text-[10px] text-[#3C096C] uppercase tracking-wider font-bold mb-0.5 opacity-100">Price:</span>
+                    <p className="text-skin-bold font-sans font-extrabold text-[15px] sm:text-xl leading-tight">
                       ₹{product.price}
                     </p>
                   </div>
                 </>
               )}
             </div>
-            {product.category !== "Combo Packages" && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  useCartStore.getState().addItem(product);
-                  toast.success(`${product.name} added to cart!`);
-                }}
-                className="bg-skin-bold hover:bg-skin-primary text-skin-white px-4 py-2.5 rounded-xl font-semibold transition-colors flex items-center justify-center shrink-0 ml-4"
-                aria-label={`Add ${product.name} to cart`}
-              >
-                Add to Cart
-              </motion.button>
-            )}
           </div>
-          
-          {/* Full width button for Combo Packages to keep text centered above */}
-          {product.category === "Combo Packages" && (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={(e) => {
-                e.preventDefault();
-                useCartStore.getState().addItem(product);
-                toast.success(`${product.name} added to cart!`);
-              }}
-              className="mt-4 w-full bg-skin-bold hover:bg-skin-primary text-white px-4 py-2.5 rounded-xl font-semibold transition-colors flex items-center justify-center shadow-md"
-              aria-label={`Add ${product.name} to cart`}
-            >
-              Add to Cart
-            </motion.button>
-          )}
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={(e) => {
+              e.preventDefault();
+              useCartStore.getState().addItem(product);
+              toast.success(`${product.name} added to cart!`);
+            }}
+            className="mt-1.5 sm:mt-4 w-full bg-skin-bold hover:bg-skin-primary text-white px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-md sm:rounded-xl text-[10px] sm:text-base font-semibold transition-colors flex items-center justify-center shadow-md"
+            aria-label={`Add ${product.name} to cart`}
+          >
+            Add to Cart
+          </motion.button>
         </div>
       </motion.div>
     </Link>
