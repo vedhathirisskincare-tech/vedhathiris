@@ -6,6 +6,13 @@ import { useCartStore } from "../store/cartStore";
 import Link from "next/link";
 import { useToast } from "./Toast";
 
+export interface ProductSize {
+  size: string;
+  price: number;
+  stock?: number;
+  original_price?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -20,6 +27,7 @@ export interface Product {
   ingredients?: string[]; // Optional ingredients array
   average_rating?: number; // Added for product reviews
   review_count?: number; // Added for product reviews
+  sizes?: ProductSize[];
 }
 
 export const COMBO_DETAILS: Record<string, { original_price: number, products: string[] }> = {
@@ -93,8 +101,16 @@ export function ProductCard({ product }: ProductCardProps) {
     ? product.ingredients.slice(0, 4)
     : getIngredients(product.name, product.category));
 
-  const originalPrice = comboData?.original_price || product.original_price || product.price;
-  const savings = originalPrice > product.price ? originalPrice - product.price : 0;
+  const sizesArray: ProductSize[] = Array.isArray(product.sizes)
+    ? product.sizes
+    : (typeof product.sizes === 'string' ? (() => { try { return JSON.parse(product.sizes as string); } catch { return []; } })() : []);
+
+  const hasSizes = sizesArray.length > 0;
+  const baseSize = hasSizes ? sizesArray[0] : null;
+  const displayPrice = baseSize ? baseSize.price : product.price;
+
+  const originalPrice = comboData?.original_price || product.original_price || displayPrice;
+  const savings = originalPrice > displayPrice ? originalPrice - displayPrice : 0;
 
   return (
     <Link href={`/products/${product.id}`} className="block h-full group">
@@ -209,7 +225,16 @@ export function ProductCard({ product }: ProductCardProps) {
                 </div>
               ) : (
                 <>
-                  {product.original_price && product.original_price > product.price ? (
+                  {hasSizes && (
+                    <div className="flex flex-wrap gap-1 mb-1.5">
+                      {sizesArray.map((s, idx) => (
+                        <span key={idx} className="bg-violet-50 text-violet-700 font-medium text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded border border-violet-100">
+                          {s.size}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {product.original_price && product.original_price > displayPrice ? (
                     <div className="flex items-center gap-1 mb-0.5">
                       <span className="hidden sm:inline text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Original Price:</span>
                       <span className="line-through text-[9px] sm:text-xs font-semibold text-gray-400">
@@ -218,9 +243,11 @@ export function ProductCard({ product }: ProductCardProps) {
                     </div>
                   ) : null}
                   <div className="flex flex-col">
-                    <span className="hidden sm:inline text-[10px] text-[#3C096C] uppercase tracking-wider font-bold mb-0.5 opacity-100">Price:</span>
+                    <span className="hidden sm:inline text-[10px] text-[#3C096C] uppercase tracking-wider font-bold mb-0.5 opacity-100">
+                      {hasSizes ? "Starting From:" : "Price:"}
+                    </span>
                     <p className="text-skin-bold font-sans font-extrabold text-[15px] sm:text-xl leading-tight">
-                      ₹{product.price}
+                      ₹{displayPrice}
                     </p>
                   </div>
                 </>
@@ -233,13 +260,18 @@ export function ProductCard({ product }: ProductCardProps) {
             whileTap={{ scale: 0.98 }}
             onClick={(e) => {
               e.preventDefault();
-              useCartStore.getState().addItem(product);
-              toast.success(`${product.name} added to cart!`);
+              if (hasSizes && baseSize) {
+                useCartStore.getState().addItem(product, baseSize.size, baseSize.price);
+                toast.success(`${product.name} (${baseSize.size}) added to cart!`);
+              } else {
+                useCartStore.getState().addItem(product);
+                toast.success(`${product.name} added to cart!`);
+              }
             }}
             className="mt-1.5 sm:mt-4 w-full bg-skin-bold hover:bg-skin-primary text-white px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-md sm:rounded-xl text-[10px] sm:text-base font-semibold transition-colors flex items-center justify-center shadow-md"
             aria-label={`Add ${product.name} to cart`}
           >
-            Add to Cart
+            {hasSizes ? `Add ${baseSize?.size || ''} to Cart` : "Add to Cart"}
           </motion.button>
         </div>
       </motion.div>

@@ -5,6 +5,8 @@ import type { Coupon } from '@/app/actions/coupon'
 
 export interface CartItem extends Product {
   quantity: number
+  selectedSize?: string
+  cartItemId: string
 }
 
 interface CartState {
@@ -12,9 +14,9 @@ interface CartState {
   isOpen: boolean
   appliedCoupon: Coupon | null
   setIsOpen: (isOpen: boolean) => void
-  addItem: (product: Product) => void
-  removeItem: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
+  addItem: (product: Product, selectedSize?: string, selectedPrice?: number) => void
+  removeItem: (cartItemIdOrId: string) => void
+  updateQuantity: (cartItemIdOrId: string, quantity: number) => void
   setAppliedCoupon: (coupon: Coupon | null) => void
   clearCart: () => void
 }
@@ -26,28 +28,55 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       appliedCoupon: null,
       setIsOpen: (isOpen) => set({ isOpen }),
-      addItem: (product) =>
+      addItem: (product, selectedSize, selectedPrice) =>
         set((state) => {
-          const existingItem = state.items.find((item) => item.id === product.id)
+          let chosenSize = selectedSize
+          let chosenPrice = selectedPrice ?? product.price
+
+          // If no size explicitly passed, but product has sizes, pick the first size
+          if (!chosenSize && product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0) {
+            chosenSize = product.sizes[0].size
+            chosenPrice = product.sizes[0].price
+          }
+
+          const cartKey = chosenSize ? `${product.id}-${chosenSize}` : `${product.id}-default`
+
+          const existingItem = state.items.find(
+            (item) => item.cartItemId === cartKey || (!item.cartItemId && item.id === product.id && item.selectedSize === chosenSize)
+          )
+
           if (existingItem) {
             return {
               items: state.items.map((item) =>
-                item.id === product.id
+                item === existingItem
                   ? { ...item, quantity: item.quantity + 1 }
                   : item
-              )
+              ),
             }
           }
-          return { items: [...state.items, { ...product, quantity: 1 }] }
+
+          const newItem: CartItem = {
+            ...product,
+            price: chosenPrice,
+            selectedSize: chosenSize,
+            cartItemId: cartKey,
+            quantity: 1,
+          }
+
+          return { items: [...state.items, newItem] }
         }),
-      removeItem: (productId) =>
+      removeItem: (cartItemIdOrId) =>
         set((state) => ({
-          items: state.items.filter((item) => item.id !== productId),
+          items: state.items.filter(
+            (item) => item.cartItemId !== cartItemIdOrId && item.id !== cartItemIdOrId
+          ),
         })),
-      updateQuantity: (productId, quantity) =>
+      updateQuantity: (cartItemIdOrId, quantity) =>
         set((state) => ({
           items: state.items.map((item) =>
-            item.id === productId ? { ...item, quantity: Math.max(1, quantity) } : item
+            item.cartItemId === cartItemIdOrId || item.id === cartItemIdOrId
+              ? { ...item, quantity: Math.max(1, quantity) }
+              : item
           ),
         })),
       setAppliedCoupon: (coupon) => set({ appliedCoupon: coupon }),

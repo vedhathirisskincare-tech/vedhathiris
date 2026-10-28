@@ -27,7 +27,7 @@ export default function OfferBarClient({ messages }: { messages: string[] }) {
   ) return null;
 
   return (
-    <div className="bg-skin-bold text-white text-center py-2 px-4 text-sm font-medium tracking-wide z-50 relative overflow-hidden h-9 flex items-center justify-center">
+    <div id="offer-bar" className="bg-skin-bold text-white text-center py-2 px-4 text-sm font-medium tracking-wide z-50 relative overflow-hidden h-9 flex items-center justify-center">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}

@@ -447,8 +447,9 @@ export default function CartDrawer() {
                   <div className="space-y-3">
                     {items.map((item) => {
                       const imageUrl = item.images?.[0] || item.image_url;
+                      const itemKey = item.cartItemId || item.id;
                       return (
-                        <div key={item.id} className="flex gap-4 border border-gray-100 rounded-2xl p-3.5 bg-white shadow-sm hover:shadow transition-shadow">
+                        <div key={itemKey} className="flex gap-4 border border-gray-100 rounded-2xl p-3.5 bg-white shadow-sm hover:shadow transition-shadow">
                           <div className="w-20 h-20 bg-violet-50 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden border border-violet-100">
                             {imageUrl ? (
                               <Image
@@ -465,19 +466,26 @@ export default function CartDrawer() {
                           <div className="flex-1 flex flex-col justify-between">
                             <div>
                               <h3 className="font-semibold text-sm line-clamp-2 text-gray-800">{item.name}</h3>
-                              <p className="text-violet-600 font-bold text-base mt-0.5">₹{item.price}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <p className="text-violet-600 font-bold text-base">₹{item.price}</p>
+                                {item.selectedSize && (
+                                  <span className="bg-violet-100 text-violet-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    {item.selectedSize}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="flex items-center justify-between mt-2">
                               <div className="flex items-center gap-2 bg-gray-100 rounded-full px-2.5 py-1">
-                                <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1 hover:bg-gray-200 rounded-full text-gray-700">
+                                <button onClick={() => updateQuantity(itemKey, item.quantity - 1)} className="p-1 hover:bg-gray-200 rounded-full text-gray-700">
                                   <Minus className="w-3 h-3" />
                                 </button>
                                 <span className="text-sm font-bold w-4 text-center text-gray-800">{item.quantity}</span>
-                                <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1 hover:bg-gray-200 rounded-full text-gray-700">
+                                <button onClick={() => updateQuantity(itemKey, item.quantity + 1)} className="p-1 hover:bg-gray-200 rounded-full text-gray-700">
                                   <Plus className="w-3 h-3" />
                                 </button>
                               </div>
-                              <button onClick={() => removeItem(item.id)} className="text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer">
+                              <button onClick={() => removeItem(itemKey)} className="text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer">
                                 Remove
                               </button>
                             </div>

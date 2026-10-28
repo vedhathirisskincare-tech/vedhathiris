@@ -426,38 +426,44 @@ export function HomeClient({ bestSellers, comboPackages = [] }: { bestSellers: P
           <h2 className="font-serif text-4xl text-skin-bold mb-4">Handcrafted Personal Care Categories</h2>
           <p className="font-sans text-[#3C096C] text-lg font-medium opacity-100">Pure, chemical-free wellness crafted locally in Chennai for the entire family.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             {
-              title: "Natural & Handmade Soaps",
-              desc: "Cold-processed herbal soap in Chennai enriched with red sandalwood, neem, and saffron.",
+              title: "Botanical Haircare",
+              desc: "Aqua bloom mists, 22 & 35 herb hair oils, keratin and rice protein herbal shampoos.",
+              path: "/products?category=Haircare",
+              icon: Waves
+            },
+            {
+              title: "Luxury Face Care",
+              desc: "Honey glow face wash, 24K gold & pearl serums, banana moisturiser, and glow face mists.",
+              path: "/products?category=Face+Care",
+              icon: Sparkles
+            },
+            {
+              title: "Handmade Soaps",
+              desc: "Cold-processed herbal soap enriched with saffron, red sandalwood, and camel milk.",
               path: "/products?category=Soap",
               icon: Droplet
             },
             {
-              title: "Herbal Hair Shampoos",
-              desc: "Natural hair shampoo in Chennai free from sulfates, parabens, and silicones.",
-              path: "/products?category=Shampoo",
-              icon: Waves
-            },
-            {
-              title: "Natural Hair Oils & Elixirs",
-              desc: "Pure herbal hair oil in Chennai for deep nourishment and natural hair care.",
-              path: "/products?category=Hair Oil",
+              title: "Combo Rituals",
+              desc: "Synergistic botanical trios and duos thoughtfully paired for complete head-to-toe care.",
+              path: "/products?category=Combo+Packages",
               icon: FlaskConical
             },
           ].map((cat, idx) => (
             <Link key={idx} href={cat.path}>
               <motion.div
                 whileHover={{ y: -8 }}
-                className="bg-skin-white rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl transition-all border border-skin-primary/30 h-full"
+                className="bg-skin-white rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl transition-all border border-skin-primary/30 h-full"
               >
-                <div className="mb-6 text-skin-primary">
-                  <cat.icon size={48} strokeWidth={1.5} />
+                <div className="mb-5 text-skin-primary">
+                  <cat.icon size={44} strokeWidth={1.5} />
                 </div>
-                <h3 className="font-serif font-bold text-2xl text-skin-bold mb-2">{cat.title}</h3>
-                <p className="font-sans text-sm text-skin-primary/80 mb-6">{cat.desc}</p>
-                <span className="mt-auto font-sans text-sm font-bold tracking-wide text-skin-bold/70 uppercase">Explore Collection &rarr;</span>
+                <h3 className="font-serif font-bold text-xl text-skin-bold mb-2">{cat.title}</h3>
+                <p className="font-sans text-xs text-skin-primary/80 mb-5 leading-relaxed">{cat.desc}</p>
+                <span className="mt-auto font-sans text-xs font-bold tracking-wide text-skin-bold/70 uppercase">Explore Collection &rarr;</span>
               </motion.div>
             </Link>
           ))}

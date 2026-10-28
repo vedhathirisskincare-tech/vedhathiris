@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useCartStore } from "@/store/cartStore";
 import { ShieldCheck, Leaf, Heart } from "lucide-react";
-import type { Product } from "@/components/ProductCard";
+import type { Product, ProductSize } from "@/components/ProductCard";
 import { useToast } from "@/components/Toast";
 import { ProductReviews, type Review } from "./ProductReviews";
 
@@ -38,6 +38,15 @@ export function ProductDetailClient({
     : (product.image_url && typeof product.image_url === 'string' && (product.image_url.startsWith('http') || product.image_url.startsWith('/')) ? [product.image_url] : []);
     
   const [mainImage, setMainImage] = useState(images[0] || "");
+
+  const sizesArray: ProductSize[] = Array.isArray(product.sizes)
+    ? product.sizes
+    : (typeof product.sizes === 'string' ? (() => { try { return JSON.parse(product.sizes as string); } catch { return []; } })() : []);
+
+  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(sizesArray[0] || null);
+
+  const currentPrice = selectedSize ? selectedSize.price : product.price;
+  const currentStock = selectedSize?.stock !== undefined ? selectedSize.stock : product.stock;
 
   return (
     <main className="flex-1 min-h-screen bg-skin-bg pt-24 pb-20">
@@ -109,10 +118,10 @@ export function ProductDetailClient({
               
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-baseline gap-2">
-                  {product.original_price && product.original_price > product.price ? (
+                  {product.original_price && product.original_price > currentPrice ? (
                     <>
                       <p className="text-3xl font-bold text-skin-bold font-sans">
-                        ₹{product.price}
+                        ₹{currentPrice}
                       </p>
                       <span className="line-through text-lg text-gray-400 font-medium font-sans">
                         ₹{product.original_price}
@@ -123,16 +132,58 @@ export function ProductDetailClient({
                     </>
                   ) : (
                     <p className="text-3xl font-bold text-skin-bold font-sans">
-                      ₹{product.price}
+                      ₹{currentPrice}
                     </p>
                   )}
                 </div>
-                {product.stock <= 0 && (
+                {currentStock <= 0 && (
                   <span className="text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium">
                     Out of Stock
                   </span>
                 )}
               </div>
+
+              {/* Multi-Size Variant Selector */}
+              {sizesArray.length > 0 && (
+                <div className="mb-6 p-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-skin-primary/20 shadow-xs">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-serif font-bold text-base text-skin-bold">
+                      Select Size / Volume:
+                    </span>
+                    {selectedSize && (
+                      <span className="text-xs font-semibold text-violet-700 bg-violet-100/60 px-2.5 py-0.5 rounded-full border border-violet-200">
+                        Selected: <strong>{selectedSize.size}</strong>
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    {sizesArray.map((sizeObj, idx) => {
+                      const isSelected = selectedSize?.size === sizeObj.size;
+                      const isSizeOutOfStock = sizeObj.stock !== undefined && sizeObj.stock <= 0;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          disabled={isSizeOutOfStock}
+                          onClick={() => setSelectedSize(sizeObj)}
+                          className={`px-4 py-2.5 rounded-xl border transition-all flex flex-col items-start gap-0.5 cursor-pointer text-left ${
+                            isSelected
+                              ? 'bg-violet-600 text-white border-violet-600 shadow-md ring-2 ring-violet-200 scale-102'
+                              : isSizeOutOfStock
+                              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60'
+                              : 'bg-white text-gray-800 border-gray-200 hover:border-violet-300 hover:bg-violet-50/50'
+                          }`}
+                        >
+                          <span className="font-bold text-sm">{sizeObj.size}</span>
+                          <span className={`text-xs ${isSelected ? 'text-violet-100 font-medium' : 'text-violet-700 font-bold'}`}>
+                            {isSizeOutOfStock ? 'Sold Out' : `₹${sizeObj.price}`}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="prose prose-lg mb-6">
                 <p className="text-[#3C096C] text-lg leading-relaxed whitespace-pre-line opacity-100 font-medium">
@@ -156,22 +207,24 @@ export function ProductDetailClient({
 
               <div className="flex gap-4 mb-12">
                 <motion.button
-                  whileHover={{ scale: product.stock > 0 ? 1.02 : 1 }}
-                  whileTap={{ scale: product.stock > 0 ? 0.98 : 1 }}
-                  disabled={product.stock <= 0}
+                  whileHover={{ scale: currentStock > 0 ? 1.02 : 1 }}
+                  whileTap={{ scale: currentStock > 0 ? 0.98 : 1 }}
+                  disabled={currentStock <= 0}
                   onClick={() => {
-                    if (product.stock > 0) {
-                      addItem(product);
-                      toast.success(`${product.name} added to cart!`);
+                    if (currentStock > 0) {
+                      addItem(product, selectedSize?.size, currentPrice);
+                      toast.success(`${product.name}${selectedSize ? ` (${selectedSize.size})` : ''} added to cart!`);
                     }
                   }}
                   className={`flex-1 py-4 rounded-xl font-sans font-bold text-lg shadow-md transition-all ${
-                    product.stock > 0 
-                      ? 'bg-skin-bold text-skin-white hover:shadow-lg' 
+                    currentStock > 0 
+                      ? 'bg-skin-bold text-skin-white hover:shadow-lg cursor-pointer' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
                   }`}
                 >
-                  {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                  {currentStock > 0 
+                    ? (selectedSize ? `Add ${selectedSize.size} to Cart • ₹${currentPrice}` : 'Add to Cart')
+                    : 'Out of Stock'}
                 </motion.button>
               </div>
 

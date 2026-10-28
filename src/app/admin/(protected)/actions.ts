@@ -63,7 +63,17 @@ export async function createProduct(formData: FormData) {
     }
   }
 
-  const product = {
+  let sizes: any[] = []
+  const rawSizes = formData.get('sizes')?.toString()
+  if (rawSizes) {
+    try {
+      sizes = JSON.parse(rawSizes)
+    } catch {
+      sizes = []
+    }
+  }
+
+  const productData: any = {
     name: formData.get('name')?.toString(),
     description: formData.get('description')?.toString(),
     price: Number(formData.get('price')),
@@ -71,9 +81,15 @@ export async function createProduct(formData: FormData) {
     category: formData.get('category')?.toString(),
     discount_percentage: Number(formData.get('discount_percentage') || 0),
     images,
+    sizes,
   }
 
-  const { error } = await supabase.from('products').insert([product])
+  let { error } = await supabase.from('products').insert([productData])
+  if (error && error.message?.includes("'sizes' column")) {
+    delete productData.sizes
+    const fallback = await supabase.from('products').insert([productData])
+    error = fallback.error
+  }
 
   if (error) throw new Error(error.message)
   revalidatePath('/admin/products')
@@ -97,7 +113,17 @@ export async function updateProduct(id: string, formData: FormData) {
     }
   }
 
-  const product = {
+  let sizes: any[] = []
+  const rawSizes = formData.get('sizes')?.toString()
+  if (rawSizes) {
+    try {
+      sizes = JSON.parse(rawSizes)
+    } catch {
+      sizes = []
+    }
+  }
+
+  const productData: any = {
     name: formData.get('name')?.toString(),
     description: formData.get('description')?.toString(),
     price: Number(formData.get('price')),
@@ -105,9 +131,15 @@ export async function updateProduct(id: string, formData: FormData) {
     category: formData.get('category')?.toString(),
     discount_percentage: Number(formData.get('discount_percentage') || 0),
     images,
+    sizes,
   }
 
-  const { error } = await supabase.from('products').update(product).eq('id', id)
+  let { error } = await supabase.from('products').update(productData).eq('id', id)
+  if (error && error.message?.includes("'sizes' column")) {
+    delete productData.sizes
+    const fallback = await supabase.from('products').update(productData).eq('id', id)
+    error = fallback.error
+  }
 
   if (error) throw new Error(error.message)
   revalidatePath('/admin/products')

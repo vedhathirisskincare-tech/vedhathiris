@@ -131,7 +131,14 @@ export default async function InvoicePage({
               {order.order_items.map((item: any) => (
                 <tr key={item.id}>
                   <td className="py-4">
-                    <p className="font-medium text-gray-900">{item.products?.name || `Product ID: ${item.product_id}`}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-gray-900">{item.products?.name || `Product ID: ${item.product_id}`}</p>
+                      {item.size && (
+                        <span className="text-xs font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-md border border-violet-100">
+                          {item.size}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 text-center text-gray-600">{item.quantity}</td>
                   <td className="py-4 text-right text-gray-600">₹{item.price}</td>

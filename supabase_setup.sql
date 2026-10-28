@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   stock INTEGER NOT NULL DEFAULT 0,
   category TEXT NOT NULL,
   images TEXT[] DEFAULT '{}',
+  sizes JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -96,8 +97,12 @@ CREATE TABLE IF NOT EXISTS public.order_items (
   product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
   quantity INTEGER NOT NULL,
   price NUMERIC NOT NULL,
+  size TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+ALTER TABLE public.order_items ADD COLUMN IF NOT EXISTS size TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sizes JSONB DEFAULT '[]'::jsonb;
 
 -- 9. RLS for orders
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;

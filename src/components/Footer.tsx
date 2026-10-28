@@ -53,10 +53,10 @@ export default function Footer() {
               Handcrafted, skin-safe, and magical bath & body products for kids and teens.
             </p>
             <div className="flex items-center gap-4 text-skin-white/60">
-              <a href="#" className="hover:text-skin-primary transition-colors" aria-label="Facebook">
+              <a href="https://www.facebook.com/people/Vedhathirisskincare/61590708353842/" target="_blank" rel="noopener noreferrer" className="hover:text-skin-primary transition-colors" aria-label="Facebook">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
               </a>
-              <a href="#" className="hover:text-skin-primary transition-colors" aria-label="Instagram">
+              <a href="https://www.instagram.com/vedhathirisskincare" target="_blank" rel="noopener noreferrer" className="hover:text-skin-primary transition-colors" aria-label="Instagram">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
               </a>
             </div>
@@ -65,9 +65,10 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-skin-white">Shop</h4>
             <ul className="space-y-2 text-sm text-skin-white/80">
               <li><Link href="/products" className="hover:text-skin-primary">All Products</Link></li>
-              <li><Link href="/products?category=Soap" className="hover:text-skin-primary">Soaps</Link></li>
-              <li><Link href="/products?category=Shampoo" className="hover:text-skin-primary">Shampoos</Link></li>
-              <li><Link href="/products?category=Hair Oil" className="hover:text-skin-primary">Hair Oils</Link></li>
+              <li><Link href="/products?category=Haircare" className="hover:text-skin-primary">Haircare</Link></li>
+              <li><Link href="/products?category=Face+Care" className="hover:text-skin-primary">Face Care</Link></li>
+              <li><Link href="/products?category=Soap" className="hover:text-skin-primary">Handmade Soaps</Link></li>
+              <li><Link href="/products?category=Combo+Packages" className="hover:text-skin-primary">Combo Rituals</Link></li>
             </ul>
           </div>
           <div>

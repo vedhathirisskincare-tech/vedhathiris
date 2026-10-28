@@ -10,6 +10,7 @@ export interface DBProduct {
   discount_percentage?: number;
   created_at: string;
   ingredients?: string[];
+  sizes?: any;
 }
 
 export interface DBCategoryOffer {
@@ -32,12 +33,22 @@ export function applyDiscountsToProducts(products: DBProduct[], categoryOffers: 
     const discountedPrice = effectiveDiscount > 0 
       ? Math.round(product.price * (1 - effectiveDiscount / 100)) 
       : product.price;
+
+    let discountedSizes = product.sizes;
+    if (Array.isArray(product.sizes) && effectiveDiscount > 0) {
+      discountedSizes = product.sizes.map((s: any) => ({
+        ...s,
+        original_price: s.price,
+        price: Math.round(s.price * (1 - effectiveDiscount / 100)),
+      }));
+    }
     
     return {
       ...product,
       original_price: product.price,
       price: discountedPrice,
-      discount_percentage: effectiveDiscount
+      discount_percentage: effectiveDiscount,
+      sizes: discountedSizes,
     };
   });
 }
@@ -52,11 +63,21 @@ export function applyDiscountToSingleProduct(product: DBProduct, categoryOffers:
   const discountedPrice = effectiveDiscount > 0 
     ? Math.round(product.price * (1 - effectiveDiscount / 100)) 
     : product.price;
+
+  let discountedSizes = product.sizes;
+  if (Array.isArray(product.sizes) && effectiveDiscount > 0) {
+    discountedSizes = product.sizes.map((s: any) => ({
+      ...s,
+      original_price: s.price,
+      price: Math.round(s.price * (1 - effectiveDiscount / 100)),
+    }));
+  }
   
   return {
     ...product,
     original_price: product.price,
     price: discountedPrice,
-    discount_percentage: effectiveDiscount
+    discount_percentage: effectiveDiscount,
+    sizes: discountedSizes,
   };
 }

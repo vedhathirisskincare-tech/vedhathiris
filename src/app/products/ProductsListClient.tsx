@@ -18,10 +18,19 @@ export function ProductsListClient({ products }: { products: Product[] }) {
     "Super Luxury Collection"
   ];
 
+  const categories = ["All", "Haircare", "Face Care", "Soap", "Shampoo", "Hair Oil", "Combo Packages"];
+
   useEffect(() => {
-    if (categoryParam && ["Soap", "Shampoo", "Hair Oil", "Combo Packages"].includes(categoryParam)) {
-      setActiveCategory(categoryParam);
-      setActiveSubcategory("All");
+    if (categoryParam) {
+      const normalizedParam = categoryParam.replace(/\+/g, ' ').toLowerCase();
+      const matched = categories.find(c => c.toLowerCase() === normalizedParam);
+      if (matched) {
+        setActiveCategory(matched);
+        setActiveSubcategory("All");
+      } else {
+        setActiveCategory(categoryParam);
+        setActiveSubcategory("All");
+      }
     }
   }, [categoryParam]);
 
@@ -32,6 +41,7 @@ export function ProductsListClient({ products }: { products: Product[] }) {
 
   const filteredProducts = products.filter(p => {
     const isSoapProduct = soapSubcategories.includes(p.category) || p.category === "Soap";
+    const catLower = (p.category || "").toLowerCase();
 
     if (activeCategory === "All") {
       return true;
@@ -43,10 +53,16 @@ export function ProductsListClient({ products }: { products: Product[] }) {
       return p.category === activeSubcategory;
     }
 
+    if (activeCategory === "Haircare") {
+      return catLower === "haircare" || catLower === "hair care" || catLower === "hair oil" || catLower === "shampoo";
+    }
+
+    if (activeCategory === "Face Care") {
+      return catLower === "face care" || catLower === "facecare" || catLower.includes("face") || catLower.includes("serum");
+    }
+
     return p.category === activeCategory;
   });
-
-  const categories = ["All", "Combo Packages", "Soap", "Shampoo", "Hair Oil"];
 
   return (
     <div className="flex flex-col md:flex-row gap-6 md:gap-10">

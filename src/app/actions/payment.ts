@@ -131,11 +131,21 @@ export async function verifyPaymentAndSaveOrder(
       product_id: item.id,
       quantity: item.quantity,
       price: item.price,
+      size: item.selectedSize || null,
     }));
 
-    const { error: itemsError } = await adminSupabase
+    let { error: itemsError } = await adminSupabase
       .from('order_items')
       .insert(orderItems);
+
+    // If 'size' column doesn't exist yet on order_items table, retry without size
+    if (itemsError && itemsError.message?.includes("'size' column")) {
+      const itemsWithoutSize = orderItems.map(({ size, ...rest }) => rest);
+      const fallback = await adminSupabase
+        .from('order_items')
+        .insert(itemsWithoutSize);
+      itemsError = fallback.error;
+    }
 
     if (itemsError) throw new Error(`Order Items Creation Failed: ${itemsError.message}`);
 

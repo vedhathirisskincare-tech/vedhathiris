@@ -53,10 +53,13 @@ export function getCategoryKeywords(category?: string | null): string[] {
   if (lower.includes('soap')) {
     return [...CHENNAI_KEYWORDS.soap, ...CHENNAI_KEYWORDS.skincare];
   }
+  if (lower.includes('face') || lower.includes('serum') || lower.includes('skin')) {
+    return [...CHENNAI_KEYWORDS.skincare, ...CHENNAI_KEYWORDS.soap];
+  }
   if (lower.includes('shampoo')) {
     return [...CHENNAI_KEYWORDS.shampoo, ...CHENNAI_KEYWORDS.oil];
   }
-  if (lower.includes('oil') || lower.includes('elixir')) {
+  if (lower.includes('oil') || lower.includes('elixir') || lower.includes('hair')) {
     return [...CHENNAI_KEYWORDS.oil, ...CHENNAI_KEYWORDS.shampoo];
   }
   return CHENNAI_KEYWORDS.all;
