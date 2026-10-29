@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { ProductDetailClient } from "./ProductDetailClient";
-import { applyDiscountToSingleProduct } from "@/utils/discount";
+import { applyDiscountToSingleProduct, applyDiscountsToProducts } from "@/utils/discount";
 import { getCanonicalUrl, getLanguageAlternates } from "@/utils/site";
 import { CHENNAI_KEYWORDS, getCategoryKeywords, generateProductSchema, generateBreadcrumbSchema } from "@/utils/seo";
 import type { Product } from "@/components/ProductCard";
@@ -99,7 +99,7 @@ export default async function ProductPage({
   const { data: { user } } = await supabase.auth.getUser();
 
   // Fetch reviews safely without joining profiles to avoid PostgREST FK issues
-  const { data: reviews, error: reviewError } = await supabase
+  const { data: reviews } = await supabase
     .from('product_reviews')
     .select(`
       id, rating, review_text, created_at, user_id
@@ -140,6 +140,45 @@ export default async function ProductPage({
     notFound();
   }
 
+  // Fetch relevant products: minimum 20 products display for user
+  const { data: sameCategoryProducts } = await supabase
+    .from('products')
+    .select('*')
+    .eq('category', product.category)
+    .neq('id', id)
+    .limit(24);
+
+  let relevantRaw = sameCategoryProducts || [];
+
+  if (relevantRaw.length < 20) {
+    const existingIds = [id, ...relevantRaw.map(p => p.id)];
+    const needed = 24 - relevantRaw.length;
+    const { data: moreProducts } = await supabase
+      .from('products')
+      .select('*')
+      .not('id', 'in', `(${existingIds.join(',')})`)
+      .limit(needed);
+
+    if (moreProducts && moreProducts.length > 0) {
+      relevantRaw = [...relevantRaw, ...moreProducts];
+    }
+  }
+
+  // Fetch rating summaries for all relevant products
+  const relevantIds = relevantRaw.map(p => p.id);
+  const { data: relevantRatingSummaries } = relevantIds.length > 0
+    ? await supabase.from('product_rating_summary').select('*').in('product_id', relevantIds)
+    : { data: [] };
+
+  const discountedRelevant = applyDiscountsToProducts(relevantRaw, categoryOffers || []);
+  const relevantProducts = discountedRelevant.map(p => {
+    const sum = relevantRatingSummaries?.find(rs => rs.product_id === p.id);
+    if (sum) {
+      return { ...p, average_rating: sum.average_rating, review_count: sum.review_count };
+    }
+    return p;
+  }) as Product[];
+
   const breadcrumbs = [
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
@@ -161,6 +200,7 @@ export default async function ProductPage({
         product={discountedProduct} 
         reviews={reviewsWithProfiles}
         currentUserId={user?.id || null}
+        relevantProducts={relevantProducts}
       />
     </>
   );

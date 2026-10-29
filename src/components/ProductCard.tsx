@@ -10,7 +10,9 @@ export interface ProductSize {
   size: string;
   price: number;
   stock?: number;
+  mrp_price?: number;
   original_price?: number;
+  benefits?: string[];
 }
 
 export interface Product {
@@ -23,8 +25,10 @@ export interface Product {
   images?: string[];
   image_url?: string; // For backward compatibility if needed
   discount_percentage?: number;
+  mrp_price?: number;
   original_price?: number;
   ingredients?: string[]; // Optional ingredients array
+  benefits?: string[]; // Key product benefits
   average_rating?: number; // Added for product reviews
   review_count?: number; // Added for product reviews
   sizes?: ProductSize[];
@@ -74,6 +78,25 @@ function getIngredients(name: string, category: string): string[] {
   return Array.from(new Set([...main, ...defaults])).slice(0, 4);
 }
 
+// Helper to get size / capacity strings
+function getProductCapacity(product: Product, sizesArray: ProductSize[]): string[] {
+  if (sizesArray && sizesArray.length > 0) {
+    return sizesArray.map(s => s.size);
+  }
+  const cat = (product.category || "").toLowerCase();
+  const name = product.name.toLowerCase();
+  if (name.includes("trio")) return ["3 × 100g"];
+  if (name.includes("duo")) return ["2 Units"];
+  if (name.includes("shampoo") || cat.includes("shampoo")) return ["200ml"];
+  if (name.includes("oil") || cat.includes("oil")) return ["100ml"];
+  if (name.includes("mist")) return ["100ml"];
+  if (name.includes("serum")) return ["30ml"];
+  if (name.includes("wash")) return ["100ml"];
+  if (cat.includes("soap") || cat.includes("collection")) return ["100g"];
+  if (cat.includes("face") || name.includes("pack") || name.includes("cream")) return ["50g"];
+  return ["100g"];
+}
+
 interface ProductCardProps {
   product: Product;
 }
@@ -109,8 +132,19 @@ export function ProductCard({ product }: ProductCardProps) {
   const baseSize = hasSizes ? sizesArray[0] : null;
   const displayPrice = baseSize ? baseSize.price : product.price;
 
-  const originalPrice = comboData?.original_price || product.original_price || displayPrice;
-  const savings = originalPrice > displayPrice ? originalPrice - displayPrice : 0;
+  // Resolve MRP Price: prioritize explicit mrp_price, size mrp_price, combo original_price, or calculated discount
+  const mrpPrice = product.mrp_price
+    || baseSize?.mrp_price
+    || comboData?.original_price
+    || product.original_price
+    || baseSize?.original_price
+    || (product.discount_percentage && product.discount_percentage > 0
+        ? Math.round(displayPrice / (1 - product.discount_percentage / 100))
+        : null);
+
+  const hasDiscount = Boolean(mrpPrice && mrpPrice > displayPrice);
+  const savings = hasDiscount && mrpPrice ? mrpPrice - displayPrice : 0;
+  const capacities = getProductCapacity(product, sizesArray);
 
   return (
     <Link href={`/products/${product.id}`} className="block h-full group">
@@ -119,18 +153,22 @@ export function ProductCard({ product }: ProductCardProps) {
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -5 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="bg-white rounded-lg sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-skin-primary cursor-pointer h-full flex flex-col"
+        className="bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-skin-primary cursor-pointer h-full flex flex-col"
       >
-        <div className="relative w-full h-36 sm:h-56 bg-skin-bg flex items-center justify-center p-1 sm:p-6 shrink-0">
+        {/* Thumbnail Image Section */}
+        <div className="relative w-full h-40 sm:h-56 bg-skin-bg flex items-center justify-center p-2 sm:p-6 shrink-0">
           {product.category === "Combo Packages" && imagesArray.length > 1 ? (
             <div className="absolute inset-0 flex items-center justify-center">
               {imagesArray.slice(0, 3).map((img: string, idx: number) => (
                 <div
                   key={idx}
-                  className={`absolute w-[55%] max-w-[150px] aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.15)] border-2 sm:border-4 border-white transition-all duration-500 ease-out ${idx === 0 ? "z-30 rotate-0 group-hover:-translate-y-3 group-hover:scale-105" :
-                    idx === 1 ? "z-20 rotate-[12deg] translate-x-16 translate-y-1 group-hover:translate-x-24 group-hover:-translate-y-2 group-hover:rotate-[20deg]" :
-                      "z-10 -rotate-[12deg] -translate-x-16 translate-y-1 group-hover:-translate-x-24 group-hover:-translate-y-2 group-hover:-rotate-[20deg]"
-                    }`}
+                  className={`absolute w-[55%] max-w-[150px] aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.15)] border-2 sm:border-4 border-white transition-all duration-500 ease-out ${
+                    idx === 0
+                      ? "z-30 rotate-0 group-hover:-translate-y-3 group-hover:scale-105"
+                      : idx === 1
+                      ? "z-20 rotate-[12deg] translate-x-14 translate-y-1 group-hover:translate-x-20 group-hover:-translate-y-2 group-hover:rotate-[20deg]"
+                      : "z-10 -rotate-[12deg] -translate-x-14 translate-y-1 group-hover:-translate-x-20 group-hover:-translate-y-2 group-hover:-rotate-[20deg]"
+                  }`}
                 >
                   <Image
                     src={img}
@@ -143,13 +181,28 @@ export function ProductCard({ product }: ProductCardProps) {
               ))}
             </div>
           ) : imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover"
-            />
+            <div className="relative w-full h-full overflow-hidden">
+              <Image
+                src={imageUrl}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className={`object-cover transition-all duration-500 ease-out ${
+                  imagesArray.length > 1
+                    ? "group-hover:opacity-0 group-hover:scale-105"
+                    : "group-hover:scale-105"
+                }`}
+              />
+              {imagesArray.length > 1 && (
+                <Image
+                  src={imagesArray[1]}
+                  alt={`${product.name} - alternate view`}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 group-hover:scale-105"
+                />
+              )}
+            </div>
           ) : (
             <motion.div
               animate={{ opacity: [0.5, 1, 0.5] }}
@@ -159,120 +212,124 @@ export function ProductCard({ product }: ProductCardProps) {
               ✨
             </motion.div>
           )}
-          <div className="hidden sm:block absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-bold text-skin-bold shadow-sm border border-skin-primary z-40">
+
+          <div className="hidden sm:block absolute top-3 left-3 bg-white/95 backdrop-blur-xs px-3 py-1 rounded-full text-xs font-bold text-skin-bold shadow-sm border border-skin-primary/30 z-40">
             {product.category}
           </div>
-          {product.discount_percentage && product.discount_percentage > 0 ? (
-            <div className="hidden sm:block absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-extrabold shadow-md z-40">
-              {product.discount_percentage}% OFF
+
+          {hasDiscount && (
+            <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-red-600 text-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-extrabold shadow-md z-40">
+              {product.discount_percentage && product.discount_percentage > 0
+                ? `${product.discount_percentage}% OFF`
+                : mrpPrice
+                ? `${Math.round(((mrpPrice - displayPrice) / mrpPrice) * 100)}% OFF`
+                : "OFFER"}
             </div>
-          ) : null}
+          )}
+
           {product.average_rating ? (
-            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-skin-bold shadow-sm flex items-center gap-1 border border-skin-primary/10 z-40">
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 bg-white/95 backdrop-blur-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold text-skin-bold shadow-sm flex items-center gap-1 border border-skin-primary/15 z-40">
               <span className="text-red-500">❤️</span>
               <span>{product.average_rating.toFixed(1)}</span>
-              <span className="text-gray-500 text-[10px] font-normal ml-0.5">({product.review_count})</span>
+              <span className="text-gray-500 text-[9px] sm:text-[10px] font-normal">({product.review_count})</span>
             </div>
           ) : null}
         </div>
 
-        <div className="px-1 py-1 sm:p-6 flex-1 flex flex-col justify-between">
+        {/* Card Body: strictly Name, Key Ingredients, Size/Capacity, Pricing, Add to Cart (no description) */}
+        <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between">
           <div>
-            <div className="flex items-start justify-between mb-1 sm:mb-2">
-              <h3 className="font-serif text-[13px] sm:text-xl font-bold text-skin-bold leading-tight line-clamp-2 pr-1 sm:pr-2">
-                {product.name}
-              </h3>
-            </div>
+            {/* 1. Name of the Product */}
+            <h3 className="font-serif text-sm sm:text-base md:text-lg font-bold text-skin-bold leading-snug line-clamp-2 min-h-[2.5rem] mb-2.5 group-hover:text-violet-700 transition-colors">
+              {product.name}
+            </h3>
 
-            <div className="hidden sm:block">
-              <p className="text-[#3C096C] font-sans text-sm line-clamp-2 min-h-[2.5rem] opacity-100 font-medium">
-                {product.description}
+            {/* 2. Key Ingredients */}
+            <div className="mb-2.5">
+              <p className="text-[10px] sm:text-[11px] font-bold text-violet-900 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span>🌱</span>
+                <span>{product.category === "Combo Packages" ? "Includes" : "Key Ingredients"}</span>
               </p>
+              <div className="flex flex-wrap gap-1">
+                {ingredients.slice(0, 3).map((ing, idx) => (
+                  <span
+                    key={idx}
+                    className="bg-violet-50 text-violet-900 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium border border-violet-100"
+                  >
+                    {ing}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            {/* Ingredients Section */}
-            <div className="hidden sm:flex flex-col mt-2 mb-1 flex-1 justify-start">
-              {product.category === "Combo Packages" && (
-                <p className="text-[10px] font-bold text-[#3C096C] uppercase tracking-wider mb-1.5 opacity-100">Includes:</p>
-              )}
-              <div className="flex flex-wrap gap-1.5 items-start">
-                {ingredients.map((ing, idx) => (
-                  <span key={idx} className="bg-skin-primary/5 text-[#3C096C] px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold border border-skin-primary/20">
-                    {ing}
+            {/* 3. Size / Capacity */}
+            <div className="mb-3">
+              <p className="text-[10px] sm:text-[11px] font-bold text-violet-900 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span>⚖️</span>
+                <span>Size / Capacity</span>
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {capacities.map((cap, idx) => (
+                  <span
+                    key={idx}
+                    className="bg-amber-50 text-amber-900 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold border border-amber-200"
+                  >
+                    {cap}
                   </span>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between mt-1 sm:mt-3">
-            <div className="flex flex-col w-full">
-              {product.category === "Combo Packages" ? (
-                <div className="flex flex-col items-center text-center w-full mt-0.5">
-                  <div className="flex flex-col items-center">
-                    <span className="hidden sm:inline text-[9px] sm:text-[10px] text-skin-primary uppercase tracking-wider font-bold mb-0.5">Combo Offer:</span>
-                    <p className="text-skin-bold font-sans font-extrabold text-[15px] sm:text-2xl leading-tight">
-                      ₹{product.price}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center mt-0.5 sm:mt-1">
-                    {savings > 0 && (
-                      <span className="hidden sm:inline-block text-green-700 font-bold bg-green-50 px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[9px] uppercase tracking-wider border border-green-100">
-                        Save ₹{savings}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {hasSizes && (
-                    <div className="flex flex-wrap gap-1 mb-1.5">
-                      {sizesArray.map((s, idx) => (
-                        <span key={idx} className="bg-violet-50 text-violet-700 font-medium text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded border border-violet-100">
-                          {s.size}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {product.original_price && product.original_price > displayPrice ? (
-                    <div className="flex items-center gap-1 mb-0.5">
-                      <span className="hidden sm:inline text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Original Price:</span>
-                      <span className="line-through text-[9px] sm:text-xs font-semibold text-gray-400">
-                        ₹{product.original_price}
-                      </span>
-                    </div>
-                  ) : null}
-                  <div className="flex flex-col">
-                    <span className="hidden sm:inline text-[10px] text-[#3C096C] uppercase tracking-wider font-bold mb-0.5 opacity-100">
-                      {hasSizes ? "Starting From:" : "Price:"}
+          {/* 4. Pricing & 5. Add to Cart */}
+          <div className="pt-2.5 border-t border-skin-primary/10 mt-auto">
+            {/* Pricing Section: MRP Price Striked Out & Selling Price Clearly Visible */}
+            <div className="flex flex-col mb-2.5">
+              {hasDiscount && mrpPrice ? (
+                <div className="flex items-center gap-1.5 text-xs mb-0.5">
+                  <span className="text-[10px] sm:text-xs text-gray-400 font-semibold uppercase tracking-wider">
+                    MRP:
+                  </span>
+                  <span className="line-through text-gray-400 font-semibold text-xs sm:text-sm">
+                    ₹{mrpPrice}
+                  </span>
+                  {savings > 0 && (
+                    <span className="text-green-700 font-bold bg-green-50 px-1.5 py-0.2 rounded text-[9px] uppercase tracking-wider border border-green-200">
+                      Save ₹{savings}
                     </span>
-                    <p className="text-skin-bold font-sans font-extrabold text-[15px] sm:text-xl leading-tight">
-                      ₹{displayPrice}
-                    </p>
-                  </div>
-                </>
-              )}
+                  )}
+                </div>
+              ) : null}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[10px] sm:text-xs text-violet-900 font-bold uppercase tracking-wider">
+                  Selling Price:
+                </span>
+                <span className="text-skin-bold font-sans font-extrabold text-base sm:text-xl leading-tight">
+                  ₹{displayPrice}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={(e) => {
-              e.preventDefault();
-              if (hasSizes && baseSize) {
-                useCartStore.getState().addItem(product, baseSize.size, baseSize.price);
-                toast.success(`${product.name} (${baseSize.size}) added to cart!`);
-              } else {
-                useCartStore.getState().addItem(product);
-                toast.success(`${product.name} added to cart!`);
-              }
-            }}
-            className="mt-1.5 sm:mt-4 w-full bg-skin-bold hover:bg-skin-primary text-white px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-md sm:rounded-xl text-[10px] sm:text-base font-semibold transition-colors flex items-center justify-center shadow-md"
-            aria-label={`Add ${product.name} to cart`}
-          >
-            {hasSizes ? `Add ${baseSize?.size || ''} to Cart` : "Add to Cart"}
-          </motion.button>
+            {/* 5. Add to Cart Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => {
+                e.preventDefault();
+                if (hasSizes && baseSize) {
+                  useCartStore.getState().addItem(product, baseSize.size, baseSize.price);
+                  toast.success(`${product.name} (${baseSize.size}) added to cart!`);
+                } else {
+                  useCartStore.getState().addItem(product);
+                  toast.success(`${product.name} added to cart!`);
+                }
+              }}
+              className="w-full bg-skin-bold hover:bg-violet-700 text-white px-3 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center shadow-md cursor-pointer"
+              aria-label={`Add ${product.name} to cart`}
+            >
+              {hasSizes && baseSize ? `Add ${baseSize.size} to Cart` : "Add to Cart"}
+            </motion.button>
+          </div>
         </div>
       </motion.div>
     </Link>

@@ -21,16 +21,56 @@ export default async function Home() {
   const { data: categoryOffers } = await supabase.from('category_offers').select('*');
   const { data: ratingSummary } = await supabase.from('product_rating_summary').select('*');
 
-  const targetNames = [
-    "Papaya Nourish Soap",
-    "Potato, Beetroot & Tomato Soap",
-    "Seraphine Aura Luxurious Hair Elixir",
-    "Keravance Luxe"
-  ];
+  // Fetch admin-chosen 4 featured products for the home page
+  const { data: featuredSetting } = await supabase
+    .from('offers')
+    .select('message')
+    .like('message', 'HOMEPAGE_FEATURED:%')
+    .maybeSingle();
 
-  const filteredProducts = targetNames
-    .map(name => products?.find(p => p.name.toLowerCase() === name.toLowerCase()))
-    .filter((p): p is DBProduct => !!p);
+  let featuredIds: string[] = [];
+  if (featuredSetting?.message) {
+    try {
+      const raw = featuredSetting.message.replace('HOMEPAGE_FEATURED:', '');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        featuredIds = parsed;
+      }
+    } catch {
+      featuredIds = [];
+    }
+  }
+
+  // Resolve products in the exact order selected by admin
+  let filteredProducts: DBProduct[] = [];
+  if (featuredIds.length > 0) {
+    filteredProducts = featuredIds
+      .map((id) => products?.find((p) => p.id === id))
+      .filter((p): p is DBProduct => !!p);
+  }
+
+  // Graceful fallback if any selected product was deleted or unselected
+  if (filteredProducts.length < 4 && products && products.length > 0) {
+    const fallbackDefaults = [
+      "Papaya Nourish Soap",
+      "Potato, Beetroot & Tomato Soap",
+      "Seraphine Aura Luxurious Hair Elixir",
+      "Keravance Luxe",
+    ];
+    for (const name of fallbackDefaults) {
+      if (filteredProducts.length >= 4) break;
+      const found = products.find((p) => p.name.toLowerCase() === name.toLowerCase());
+      if (found && !filteredProducts.some((p) => p.id === found.id)) {
+        filteredProducts.push(found as DBProduct);
+      }
+    }
+    for (const p of products) {
+      if (filteredProducts.length >= 4) break;
+      if (!filteredProducts.some((fp) => fp.id === p.id) && p.category !== "Combo Packages") {
+        filteredProducts.push(p as DBProduct);
+      }
+    }
+  }
 
   const bestSellers = applyDiscountsToProducts(filteredProducts, categoryOffers || []);
   

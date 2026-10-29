@@ -73,18 +73,58 @@ export async function createProduct(formData: FormData) {
     }
   }
 
+  let ingredients: string[] = []
+  const rawIngredients = formData.get('ingredients')?.toString()
+  if (rawIngredients) {
+    try {
+      ingredients = JSON.parse(rawIngredients)
+    } catch {
+      ingredients = rawIngredients.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+  }
+
+  let benefits: string[] = []
+  const rawBenefits = formData.get('benefits')?.toString()
+  if (rawBenefits) {
+    try {
+      benefits = JSON.parse(rawBenefits)
+    } catch {
+      benefits = rawBenefits.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+  }
+
+  const mrpVal = formData.get('mrp_price') ? Number(formData.get('mrp_price')) : null
+
   const productData: any = {
     name: formData.get('name')?.toString(),
     description: formData.get('description')?.toString(),
     price: Number(formData.get('price')),
+    mrp_price: mrpVal,
     stock: Number(formData.get('stock')),
     category: formData.get('category')?.toString(),
     discount_percentage: Number(formData.get('discount_percentage') || 0),
     images,
     sizes,
+    ingredients,
+    benefits,
   }
 
   let { error } = await supabase.from('products').insert([productData])
+  if (error && (error.message?.includes("'benefits'") || error.message?.includes('benefits'))) {
+    delete productData.benefits
+    const fallback = await supabase.from('products').insert([productData])
+    error = fallback.error
+  }
+  if (error && (error.message?.includes("'ingredients'") || error.message?.includes('ingredients'))) {
+    delete productData.ingredients
+    const fallback = await supabase.from('products').insert([productData])
+    error = fallback.error
+  }
+  if (error && (error.message?.includes("'mrp_price'") || error.message?.includes('mrp_price'))) {
+    delete productData.mrp_price
+    const fallback = await supabase.from('products').insert([productData])
+    error = fallback.error
+  }
   if (error && error.message?.includes("'sizes' column")) {
     delete productData.sizes
     const fallback = await supabase.from('products').insert([productData])
@@ -123,18 +163,58 @@ export async function updateProduct(id: string, formData: FormData) {
     }
   }
 
+  let ingredients: string[] = []
+  const rawIngredients = formData.get('ingredients')?.toString()
+  if (rawIngredients) {
+    try {
+      ingredients = JSON.parse(rawIngredients)
+    } catch {
+      ingredients = rawIngredients.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+  }
+
+  let benefits: string[] = []
+  const rawBenefits = formData.get('benefits')?.toString()
+  if (rawBenefits) {
+    try {
+      benefits = JSON.parse(rawBenefits)
+    } catch {
+      benefits = rawBenefits.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+  }
+
+  const mrpVal = formData.get('mrp_price') ? Number(formData.get('mrp_price')) : null
+
   const productData: any = {
     name: formData.get('name')?.toString(),
     description: formData.get('description')?.toString(),
     price: Number(formData.get('price')),
+    mrp_price: mrpVal,
     stock: Number(formData.get('stock')),
     category: formData.get('category')?.toString(),
     discount_percentage: Number(formData.get('discount_percentage') || 0),
     images,
     sizes,
+    ingredients,
+    benefits,
   }
 
   let { error } = await supabase.from('products').update(productData).eq('id', id)
+  if (error && (error.message?.includes("'benefits'") || error.message?.includes('benefits'))) {
+    delete productData.benefits
+    const fallback = await supabase.from('products').update(productData).eq('id', id)
+    error = fallback.error
+  }
+  if (error && (error.message?.includes("'ingredients'") || error.message?.includes('ingredients'))) {
+    delete productData.ingredients
+    const fallback = await supabase.from('products').update(productData).eq('id', id)
+    error = fallback.error
+  }
+  if (error && (error.message?.includes("'mrp_price'") || error.message?.includes('mrp_price'))) {
+    delete productData.mrp_price
+    const fallback = await supabase.from('products').update(productData).eq('id', id)
+    error = fallback.error
+  }
   if (error && error.message?.includes("'sizes' column")) {
     delete productData.sizes
     const fallback = await supabase.from('products').update(productData).eq('id', id)
@@ -431,4 +511,78 @@ export async function deleteCoupon(id: string) {
   revalidatePath('/')
   return { success: true }
 }
+
+// Homepage Featured Products Actions (Admin selects any 4 products for Home Page)
+export async function getHomepageFeaturedProductIds(): Promise<string[]> {
+  try {
+    const supabase = getAdminSupabase()
+    const { data } = await supabase
+      .from('offers')
+      .select('message')
+      .like('message', 'HOMEPAGE_FEATURED:%')
+      .maybeSingle()
+
+    if (data && data.message) {
+      const raw = data.message.replace('HOMEPAGE_FEATURED:', '')
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.slice(0, 4)
+      }
+    }
+  } catch (err) {
+    console.error('Error reading homepage featured product IDs:', err)
+  }
+
+  // Fallback IDs
+  return [
+    '313406f1-fc89-49c8-8432-61ae102ab262',
+    'd2a2d359-5a88-4bd5-953d-7bc94127007b',
+    '56ad2ca0-5f26-4dc3-b194-7cf75c23ed9c',
+    'db0e1e6d-e7d1-4722-9303-b4ad10594d22'
+  ]
+}
+
+export async function updateHomepageFeaturedProducts(productIds: string[]) {
+  try {
+    const supabase = getAdminSupabase()
+    const cleanIds = Array.isArray(productIds)
+      ? Array.from(new Set(productIds.filter(Boolean))).slice(0, 4)
+      : []
+
+    if (cleanIds.length !== 4) {
+      throw new Error('Please select exactly 4 products to feature on the home page.')
+    }
+
+    const payloadMessage = 'HOMEPAGE_FEATURED:' + JSON.stringify(cleanIds)
+
+    const { data: existing } = await supabase
+      .from('offers')
+      .select('id')
+      .like('message', 'HOMEPAGE_FEATURED:%')
+      .maybeSingle()
+
+    if (existing) {
+      const { error } = await supabase
+        .from('offers')
+        .update({ message: payloadMessage, updated_at: new Date().toISOString() })
+        .eq('id', existing.id)
+      if (error) throw new Error(error.message)
+    } else {
+      const { error } = await supabase
+        .from('offers')
+        .insert({ message: payloadMessage, is_active: false })
+      if (error) throw new Error(error.message)
+    }
+
+    revalidatePath('/')
+    revalidatePath('/admin/products')
+    revalidatePath('/products')
+
+    return { success: true, productIds: cleanIds }
+  } catch (error: any) {
+    console.error('Error updating homepage featured products:', error)
+    throw new Error(error.message || 'Failed to update homepage products')
+  }
+}
+
 

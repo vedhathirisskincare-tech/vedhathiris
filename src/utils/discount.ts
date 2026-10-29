@@ -8,8 +8,11 @@ export interface DBProduct {
   images?: string[];
   image_url?: string;
   discount_percentage?: number;
+  mrp_price?: number;
+  original_price?: number;
   created_at: string;
   ingredients?: string[];
+  benefits?: string[];
   sizes?: any;
 }
 
@@ -35,17 +38,21 @@ export function applyDiscountsToProducts(products: DBProduct[], categoryOffers: 
       : product.price;
 
     let discountedSizes = product.sizes;
-    if (Array.isArray(product.sizes) && effectiveDiscount > 0) {
+    if (Array.isArray(product.sizes)) {
       discountedSizes = product.sizes.map((s: any) => ({
         ...s,
-        original_price: s.price,
-        price: Math.round(s.price * (1 - effectiveDiscount / 100)),
+        mrp_price: s.mrp_price || s.original_price || s.price,
+        original_price: s.mrp_price || s.original_price || s.price,
+        price: effectiveDiscount > 0 ? Math.round(s.price * (1 - effectiveDiscount / 100)) : s.price,
       }));
     }
     
+    const baseMrp = product.mrp_price || product.original_price || (effectiveDiscount > 0 ? product.price : undefined);
+
     return {
       ...product,
-      original_price: product.price,
+      mrp_price: baseMrp,
+      original_price: baseMrp || product.price,
       price: discountedPrice,
       discount_percentage: effectiveDiscount,
       sizes: discountedSizes,
@@ -65,17 +72,21 @@ export function applyDiscountToSingleProduct(product: DBProduct, categoryOffers:
     : product.price;
 
   let discountedSizes = product.sizes;
-  if (Array.isArray(product.sizes) && effectiveDiscount > 0) {
+  if (Array.isArray(product.sizes)) {
     discountedSizes = product.sizes.map((s: any) => ({
       ...s,
-      original_price: s.price,
-      price: Math.round(s.price * (1 - effectiveDiscount / 100)),
+      mrp_price: s.mrp_price || s.original_price || s.price,
+      original_price: s.mrp_price || s.original_price || s.price,
+      price: effectiveDiscount > 0 ? Math.round(s.price * (1 - effectiveDiscount / 100)) : s.price,
     }));
   }
   
+  const baseMrp = product.mrp_price || product.original_price || (effectiveDiscount > 0 ? product.price : undefined);
+
   return {
     ...product,
-    original_price: product.price,
+    mrp_price: baseMrp,
+    original_price: baseMrp || product.price,
     price: discountedPrice,
     discount_percentage: effectiveDiscount,
     sizes: discountedSizes,

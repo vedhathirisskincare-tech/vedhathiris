@@ -8,6 +8,7 @@ import RealtimeListener from "../components/RealtimeListener";
 import OfferBar from "../components/OfferBar";
 import { ToastProvider } from "../components/Toast";
 import LoginPopup from "../components/LoginPopup";
+import ScrollManager from "../components/ScrollManager";
 
 
 import { SITE_URL, getLanguageAlternates } from "@/utils/site";
@@ -80,7 +81,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      className={`${inter.variable} ${playfair.variable} min-h-screen antialiased`}
     >
       <head>
         <script
@@ -94,8 +95,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-sans text-gray-900 bg-white">
+      <body className="min-h-screen flex flex-col font-sans text-gray-900 bg-white">
         <ToastProvider>
+          <ScrollManager />
           <RealtimeListener />
           <LoginPopup />
           <OfferBar />

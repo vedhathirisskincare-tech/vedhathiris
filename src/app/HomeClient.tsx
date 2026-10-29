@@ -168,11 +168,11 @@ function ComboCarousel({ comboPackages }: { comboPackages: Product[] }) {
 
             <div className="bg-white border border-skin-primary/10 rounded-2xl p-6 mb-8 shadow-sm">
               <div className="flex items-center gap-4 mb-2">
-                <span className="text-skin-primary text-sm uppercase tracking-wider font-semibold">Normal Price:</span>
+                <span className="text-skin-primary text-sm uppercase tracking-wider font-semibold">MRP Price:</span>
                 <span className="text-skin-primary/60 line-through text-lg">₹{originalPrice}</span>
               </div>
               <div className="flex items-end gap-4 mb-2">
-                <span className="text-skin-bold text-sm uppercase tracking-wider font-bold mb-1">Offer Price:</span>
+                <span className="text-skin-bold text-sm uppercase tracking-wider font-bold mb-1">Selling Price:</span>
                 <div className="flex items-center gap-3">
                   <span className="text-4xl md:text-5xl font-extrabold text-skin-bold">₹{product.price}</span>
                   {savings > 0 && (
