@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Menu, X, Star, Ticket, Sparkles } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Menu, X, Star, Ticket, Sparkles, SlidersHorizontal } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { adminLogout } from '../login/actions'
 import { toggleVisitorPopupSetting } from './actions'
@@ -37,6 +37,7 @@ export function AdminMobileNav({ initialPopupEnabled = false }: { initialPopupEn
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
     { href: '/admin/products', label: 'Products', icon: Package },
+    { href: '/admin/customize-products', label: 'Customize Products', icon: SlidersHorizontal },
     { href: '/admin/coupons', label: 'Coupons', icon: Ticket },
     { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/enquiries', label: 'Enquiries', icon: Mail },

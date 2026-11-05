@@ -35,6 +35,61 @@ export default async function ProductsPage() {
     return p;
   });
 
+  // Fetch dynamic display arrangement from admin panel
+  const { data: orderSetting } = await supabase
+    .from('offers')
+    .select('message')
+    .like('message', 'PRODUCTS_DISPLAY_ORDER:%')
+    .maybeSingle();
+
+  let orderedIds: string[] = [];
+  if (orderSetting?.message) {
+    try {
+      const raw = orderSetting.message.replace('PRODUCTS_DISPLAY_ORDER:', '');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        orderedIds = parsed;
+      }
+    } catch {
+      orderedIds = [];
+    }
+  }
+
+  // Separate standard products from combo packages
+  const isCombo = (cat: string) => cat === 'Combo Packages' || cat.toLowerCase().includes('combo');
+  
+  const standardProducts = productsWithRatings.filter(p => !isCombo(p.category || ''));
+  const comboProducts = productsWithRatings.filter(p => isCombo(p.category || ''));
+
+  // Sort standard products according to admin arrangement
+  const sortedStandardProducts = [...standardProducts];
+  if (orderedIds.length > 0) {
+    sortedStandardProducts.sort((a, b) => {
+      const indexA = orderedIds.indexOf(a.id);
+      const indexB = orderedIds.indexOf(b.id);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return 0;
+    });
+  }
+
+  // Sort combo packages according to admin arrangement
+  const sortedComboProducts = [...comboProducts];
+  if (orderedIds.length > 0) {
+    sortedComboProducts.sort((a, b) => {
+      const indexA = orderedIds.indexOf(a.id);
+      const indexB = orderedIds.indexOf(b.id);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return 0;
+    });
+  }
+
+  // Standard products show first in admin-specified order, and finally combo packs are shown
+  const finalOrderedProducts = [...sortedStandardProducts, ...sortedComboProducts];
+
   const breadcrumbs = [
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
@@ -53,7 +108,7 @@ export default async function ProductsPage() {
         <p className="font-sans text-skin-primary text-lg mb-12">Discover handcrafted natural soap in Chennai, herbal shampoo, and organic hair oil formulations.</p>
         
         <Suspense fallback={<div className="py-10 text-center font-sans font-medium text-skin-primary">Loading collection...</div>}>
-          <ProductsListClient products={productsWithRatings} />
+          <ProductsListClient products={finalOrderedProducts} />
         </Suspense>
       </div>
     </div>

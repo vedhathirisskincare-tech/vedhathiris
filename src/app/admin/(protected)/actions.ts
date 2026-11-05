@@ -4,6 +4,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { generateAndUploadComboGrid } from '@/utils/comboImage'
 
 // Create a supabase client with the service role key to bypass RLS
 // This is safe here because these actions are protected by the admin_session cookie
@@ -49,17 +50,95 @@ async function uploadProductImage(file: File): Promise<string> {
 // Product Actions
 export async function createProduct(formData: FormData) {
   const supabase = getAdminSupabase()
+  const category = formData.get('category')?.toString() || ''
+  const isCombo = category === 'Combo Packages' || category.toLowerCase().includes('combo')
+
+  let ingredients: string[] = []
+  const rawIngredients = formData.get('ingredients')?.toString()
+  if (rawIngredients) {
+    try {
+      ingredients = JSON.parse(rawIngredients)
+    } catch {
+      ingredients = rawIngredients.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+  }
 
   const images: string[] = []
-  for (let i = 1; i <= 4; i++) {
-    const file = formData.get(`imageFile${i}`) as File | null
-    const textUrl = formData.get(`image${i}`)?.toString() || ''
-    
-    if (file && file.size > 0) {
-      const uploadedUrl = await uploadProductImage(file)
-      images.push(uploadedUrl)
-    } else if (textUrl) {
-      images.push(textUrl)
+
+  if (isCombo) {
+    // 1. Slot 1 (Main Image): Combo Grid from chosen products by default
+    let firstImage = ''
+    const file1 = formData.get('imageFile1') as File | null
+    const textUrl1 = formData.get('image1')?.toString() || ''
+
+    if (ingredients.length >= 2) {
+      const { data: constituentProds } = await supabase
+        .from('products')
+        .select('name, images')
+        .in('name', ingredients)
+
+      const sortedConstituents = ingredients
+        .map((name) => constituentProds?.find((p) => p.name.toLowerCase().trim() === name.toLowerCase().trim()))
+        .filter(Boolean)
+
+      const constituentImages = sortedConstituents
+        .map((p) => p?.images?.[0])
+        .filter(Boolean) as string[]
+
+      if (constituentImages.length >= 2) {
+        const gridUrl = await generateAndUploadComboGrid(
+          constituentImages,
+          formData.get('name')?.toString() || 'combo'
+        )
+        if (gridUrl) {
+          firstImage = gridUrl
+        }
+      }
+    }
+
+    if (!firstImage) {
+      if (file1 && file1.size > 0) {
+        firstImage = await uploadProductImage(file1)
+      } else if (textUrl1) {
+        firstImage = textUrl1
+      }
+    }
+    if (firstImage) images.push(firstImage)
+
+    // 2. Slot 2: Secondary Image (Uploaded by admin - shown on hover & gallery)
+    const file2 = formData.get('imageFile2') as File | null
+    const textUrl2 = formData.get('image2')?.toString() || ''
+    let secondImage = ''
+    if (file2 && file2.size > 0) {
+      secondImage = await uploadProductImage(file2)
+    } else if (textUrl2) {
+      secondImage = textUrl2
+    }
+    if (secondImage) images.push(secondImage)
+
+    // 3. Optional Slots 3 & 4
+    for (let i = 3; i <= 4; i++) {
+      const file = formData.get(`imageFile${i}`) as File | null
+      const textUrl = formData.get(`image${i}`)?.toString() || ''
+      if (file && file.size > 0) {
+        const uploadedUrl = await uploadProductImage(file)
+        images.push(uploadedUrl)
+      } else if (textUrl) {
+        images.push(textUrl)
+      }
+    }
+  } else {
+    // Standard product image handling
+    for (let i = 1; i <= 4; i++) {
+      const file = formData.get(`imageFile${i}`) as File | null
+      const textUrl = formData.get(`image${i}`)?.toString() || ''
+      
+      if (file && file.size > 0) {
+        const uploadedUrl = await uploadProductImage(file)
+        images.push(uploadedUrl)
+      } else if (textUrl) {
+        images.push(textUrl)
+      }
     }
   }
 
@@ -70,16 +149,6 @@ export async function createProduct(formData: FormData) {
       sizes = JSON.parse(rawSizes)
     } catch {
       sizes = []
-    }
-  }
-
-  let ingredients: string[] = []
-  const rawIngredients = formData.get('ingredients')?.toString()
-  if (rawIngredients) {
-    try {
-      ingredients = JSON.parse(rawIngredients)
-    } catch {
-      ingredients = rawIngredients.split(',').map((s) => s.trim()).filter(Boolean)
     }
   }
 
@@ -139,17 +208,109 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   const supabase = getAdminSupabase()
+  const category = formData.get('category')?.toString() || ''
+  const isCombo = category === 'Combo Packages' || category.toLowerCase().includes('combo')
+
+  let ingredients: string[] = []
+  const rawIngredients = formData.get('ingredients')?.toString()
+  if (rawIngredients) {
+    try {
+      ingredients = JSON.parse(rawIngredients)
+    } catch {
+      ingredients = rawIngredients.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+  }
+
+  // Fetch current product to preserve existing uploaded images if needed
+  const { data: existingProd } = await supabase
+    .from('products')
+    .select('images')
+    .eq('id', id)
+    .single()
+  const prevImages: string[] = existingProd?.images || []
 
   const images: string[] = []
-  for (let i = 1; i <= 4; i++) {
-    const file = formData.get(`imageFile${i}`) as File | null
-    const textUrl = formData.get(`image${i}`)?.toString() || ''
-    
-    if (file && file.size > 0) {
-      const uploadedUrl = await uploadProductImage(file)
-      images.push(uploadedUrl)
-    } else if (textUrl) {
-      images.push(textUrl)
+
+  if (isCombo) {
+    // 1. Slot 1 (Main Image): Combo Grid from chosen products by default
+    let firstImage = ''
+    const file1 = formData.get('imageFile1') as File | null
+    const textUrl1 = formData.get('image1')?.toString() || ''
+
+    if (ingredients.length >= 2) {
+      const { data: constituentProds } = await supabase
+        .from('products')
+        .select('name, images')
+        .in('name', ingredients)
+
+      const sortedConstituents = ingredients
+        .map((name) => constituentProds?.find((p) => p.name.toLowerCase().trim() === name.toLowerCase().trim()))
+        .filter(Boolean)
+
+      const constituentImages = sortedConstituents
+        .map((p) => p?.images?.[0])
+        .filter(Boolean) as string[]
+
+      if (constituentImages.length >= 2) {
+        const gridUrl = await generateAndUploadComboGrid(
+          constituentImages,
+          formData.get('name')?.toString() || 'combo'
+        )
+        if (gridUrl) {
+          firstImage = gridUrl
+        }
+      }
+    }
+
+    if (!firstImage) {
+      if (file1 && file1.size > 0) {
+        firstImage = await uploadProductImage(file1)
+      } else if (textUrl1) {
+        firstImage = textUrl1
+      } else if (prevImages[0]) {
+        firstImage = prevImages[0]
+      }
+    }
+    if (firstImage) images.push(firstImage)
+
+    // 2. Slot 2: Secondary Image (Uploaded by admin - shown on hover & gallery)
+    const file2 = formData.get('imageFile2') as File | null
+    const textUrl2 = formData.get('image2')?.toString() || ''
+    let secondImage = ''
+    if (file2 && file2.size > 0) {
+      secondImage = await uploadProductImage(file2)
+    } else if (textUrl2) {
+      secondImage = textUrl2
+    } else if (prevImages[1] && !prevImages[1].includes('combo_grid_')) {
+      secondImage = prevImages[1]
+    }
+    if (secondImage) images.push(secondImage)
+
+    // 3. Optional Slots 3 & 4
+    for (let i = 3; i <= 4; i++) {
+      const file = formData.get(`imageFile${i}`) as File | null
+      const textUrl = formData.get(`image${i}`)?.toString() || ''
+      if (file && file.size > 0) {
+        const uploadedUrl = await uploadProductImage(file)
+        images.push(uploadedUrl)
+      } else if (textUrl) {
+        images.push(textUrl)
+      } else if (prevImages[i - 1]) {
+        images.push(prevImages[i - 1])
+      }
+    }
+  } else {
+    // Standard product image handling
+    for (let i = 1; i <= 4; i++) {
+      const file = formData.get(`imageFile${i}`) as File | null
+      const textUrl = formData.get(`image${i}`)?.toString() || ''
+      
+      if (file && file.size > 0) {
+        const uploadedUrl = await uploadProductImage(file)
+        images.push(uploadedUrl)
+      } else if (textUrl) {
+        images.push(textUrl)
+      }
     }
   }
 
@@ -160,16 +321,6 @@ export async function updateProduct(id: string, formData: FormData) {
       sizes = JSON.parse(rawSizes)
     } catch {
       sizes = []
-    }
-  }
-
-  let ingredients: string[] = []
-  const rawIngredients = formData.get('ingredients')?.toString()
-  if (rawIngredients) {
-    try {
-      ingredients = JSON.parse(rawIngredients)
-    } catch {
-      ingredients = rawIngredients.split(',').map((s) => s.trim()).filter(Boolean)
     }
   }
 
@@ -634,6 +785,71 @@ export async function toggleVisitorPopupSetting(enabled: boolean) {
     throw new Error(error.message || 'Failed to update popup setting')
   }
 }
+
+// Products Display Order Actions (Dynamic arrangement of products in /products page)
+export async function getProductsDisplayOrder(): Promise<string[]> {
+  try {
+    const supabase = getAdminSupabase()
+    const { data } = await supabase
+      .from('offers')
+      .select('message')
+      .like('message', 'PRODUCTS_DISPLAY_ORDER:%')
+      .maybeSingle()
+
+    if (data && data.message) {
+      const raw = data.message.replace('PRODUCTS_DISPLAY_ORDER:', '')
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching products display order:', err)
+  }
+  return []
+}
+
+export async function updateProductsDisplayOrder(orderedIds: string[]) {
+  try {
+    const supabase = getAdminSupabase()
+    if (!Array.isArray(orderedIds)) {
+      throw new Error('Invalid product order data.')
+    }
+
+    const cleanIds = Array.from(new Set(orderedIds.filter(Boolean)))
+    const payloadMessage = 'PRODUCTS_DISPLAY_ORDER:' + JSON.stringify(cleanIds)
+
+    const { data: existing } = await supabase
+      .from('offers')
+      .select('id')
+      .like('message', 'PRODUCTS_DISPLAY_ORDER:%')
+      .maybeSingle()
+
+    if (existing) {
+      const { error } = await supabase
+        .from('offers')
+        .update({ message: payloadMessage, updated_at: new Date().toISOString() })
+        .eq('id', existing.id)
+      if (error) throw new Error(error.message)
+    } else {
+      const { error } = await supabase
+        .from('offers')
+        .insert({ message: payloadMessage, is_active: true })
+      if (error) throw new Error(error.message)
+    }
+
+    revalidatePath('/products')
+    revalidatePath('/')
+    revalidatePath('/admin/customize-products')
+    revalidatePath('/admin/products')
+
+    return { success: true, count: cleanIds.length }
+  } catch (error: any) {
+    console.error('Error updating products display order:', error)
+    throw new Error(error.message || 'Failed to update product arrangement')
+  }
+}
+
 
 
 

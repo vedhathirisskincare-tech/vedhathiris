@@ -248,16 +248,6 @@ export function ProductsClient({
     const selectedProds = standardProducts.filter((p) => nextIds.includes(p.id))
     const names = selectedProds.map((p) => p.name)
     setIngredientsList(names)
-
-    // Auto-populate image previews from selected products if empty
-    selectedProds.forEach((p, idx) => {
-      const img = p.images?.[0]
-      if (img) {
-        if (idx === 0 && !image1Preview) setImage1Preview(img)
-        if (idx === 1 && !image2Preview) setImage2Preview(img)
-        if (idx === 2 && !image3Preview) setImage3Preview(img)
-      }
-    })
   }
 
   const handleAddIngredient = (name: string) => {
@@ -1568,58 +1558,282 @@ export function ProductsClient({
               )}
 
               {/* Product Images Section */}
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                  Product Gallery Images (Up to 4)
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map((index) => {
-                    const preview = index === 1 ? image1Preview : index === 2 ? image2Preview : index === 3 ? image3Preview : image4Preview
+              {categoryChoice === 'Combo Packages' ? (
+                <div className="bg-amber-50/40 rounded-2xl p-4 md:p-5 border border-amber-200/80 space-y-4">
+                  <div>
+                    <div className="flex items-center gap-1.5 font-bold text-sm text-amber-950">
+                      <Gift className="w-4 h-4 text-amber-700" />
+                      <h3>Combo Package Images</h3>
+                    </div>
+                    <p className="text-xs text-amber-800 mt-0.5">
+                      <strong>Main Image (Slot 1):</strong> Auto-generates a grid of your chosen products by default.<br className="hidden sm:inline" />
+                      <strong>Second Image (Slot 2):</strong> Upload your own custom photo / packaging (shown when user hovers or clicks gallery).
+                    </p>
+                  </div>
 
-                    return (
-                      <div key={index} className="flex flex-col gap-2">
-                        <div className="relative aspect-square border-2 border-dashed border-gray-200 rounded-xl overflow-hidden flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
-                          {preview ? (
-                            <>
-                              <Image src={preview} alt={`Preview ${index}`} fill sizes="150px" className="object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => handleClearImage(index)}
-                                className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md z-10 cursor-pointer"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </>
-                          ) : (
-                            <label
-                              htmlFor={`imageFile${index}`}
-                              className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-2 text-center"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Slot 1: Combo Grid (Default First View) */}
+                    <div className="flex flex-col gap-2 p-3 bg-white rounded-xl border-2 border-dashed border-amber-300">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+                          1. Main View (Grid)
+                        </span>
+                        <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">
+                          Default
+                        </span>
+                      </div>
+
+                      <div className="relative aspect-square rounded-lg overflow-hidden bg-amber-50/50 border border-amber-200 flex items-center justify-center">
+                        {image1Preview ? (
+                          <>
+                            <Image src={image1Preview} alt="Combo Grid Preview" fill sizes="180px" className="object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => handleClearImage(1)}
+                              className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md z-10 cursor-pointer"
+                              title="Clear preview"
                             >
-                              <Upload className="w-5 h-5 text-gray-400 mb-1" />
-                              <span className="text-[11px] font-semibold text-gray-500">Upload {index}</span>
-                            </label>
-                          )}
-                          <input
-                            type="file"
-                            id={`imageFile${index}`}
-                            name={`imageFile${index}`}
-                            accept="image/*"
-                            onChange={(e) => handleFileChange(e, index)}
-                            className="hidden"
-                          />
-                        </div>
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        ) : selectedComboObjects.length >= 2 ? (
+                          <div className="w-full h-full p-2 bg-[#fdfcfb] flex flex-col justify-center items-center">
+                            <div className="grid grid-cols-2 gap-1.5 w-full h-full max-h-[140px]">
+                              {selectedComboObjects.slice(0, 4).map((p, idx) => (
+                                <div key={idx} className="relative rounded-md overflow-hidden bg-white border border-gray-200 flex items-center justify-center p-1">
+                                  {p.images?.[0] ? (
+                                    <Image src={p.images[0]} alt={p.name} fill sizes="80px" className="object-contain" />
+                                  ) : (
+                                    <span className="text-[9px] text-gray-400 text-center line-clamp-1">{p.name}</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            <span className="text-[10px] text-amber-900 font-bold mt-1">
+                              ✓ Auto Grid ({selectedComboObjects.length} items)
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="text-center p-3 text-amber-700">
+                            <span className="text-xl block mb-1">🎁</span>
+                            <span className="text-[11px] font-medium leading-tight block">
+                              Select 2+ products above to preview combo grid
+                            </span>
+                          </div>
+                        )}
                         <input
-                          type="text"
-                          name={`image${index}`}
-                          placeholder="Or paste URL"
-                          defaultValue={editingProduct?.images?.[index - 1] || ''}
-                          className="w-full px-2 py-1 text-[11px] border rounded-lg focus:ring-1 focus:ring-violet-600 outline-none"
+                          type="file"
+                          id="imageFile1"
+                          name="imageFile1"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, 1)}
+                          className="hidden"
                         />
                       </div>
-                    )
-                  })}
+                      <input
+                        type="text"
+                        name="image1"
+                        placeholder="Auto grid (or paste custom URL)"
+                        defaultValue={editingProduct?.images?.[0] || ''}
+                        className="w-full px-2 py-1 text-[11px] border rounded-lg focus:ring-1 focus:ring-amber-600 outline-none"
+                      />
+                    </div>
+
+                    {/* Slot 2: Secondary Image (Uploaded by Admin - Shown on Hover) */}
+                    <div className="flex flex-col gap-2 p-3 bg-white rounded-xl border-2 border-violet-300 ring-2 ring-violet-50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-violet-900 uppercase tracking-wider">
+                          2. Second Image
+                        </span>
+                        <span className="text-[10px] bg-violet-600 text-white font-extrabold px-1.5 py-0.5 rounded shadow-2xs">
+                          Hover View
+                        </span>
+                      </div>
+
+                      <div className="relative aspect-square border-2 border-dashed border-violet-200 rounded-lg overflow-hidden flex flex-col items-center justify-center bg-violet-50/30 hover:bg-violet-50 transition-colors">
+                        {image2Preview ? (
+                          <>
+                            <Image src={image2Preview} alt="Second Image Preview" fill sizes="180px" className="object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => handleClearImage(2)}
+                              className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md z-10 cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <label
+                            htmlFor="imageFile2"
+                            className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-2 text-center"
+                          >
+                            <Upload className="w-6 h-6 text-violet-600 mb-1" />
+                            <span className="text-[11px] font-bold text-violet-900">Upload 2nd Image</span>
+                            <span className="text-[9px] text-gray-500 mt-0.5">Admin custom photo</span>
+                          </label>
+                        )}
+                        <input
+                          type="file"
+                          id="imageFile2"
+                          name="imageFile2"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, 2)}
+                          className="hidden"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        name="image2"
+                        placeholder="Or paste 2nd image URL"
+                        defaultValue={editingProduct?.images?.[1] || ''}
+                        className="w-full px-2 py-1 text-[11px] border border-violet-200 rounded-lg focus:ring-1 focus:ring-violet-600 outline-none"
+                      />
+                    </div>
+
+                    {/* Slot 3: Optional Additional Gallery */}
+                    <div className="flex flex-col gap-2 p-3 bg-white rounded-xl border border-gray-200">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                        3. Extra View (Optional)
+                      </span>
+                      <div className="relative aspect-square border-2 border-dashed border-gray-200 rounded-lg overflow-hidden flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                        {image3Preview ? (
+                          <>
+                            <Image src={image3Preview} alt="Preview 3" fill sizes="180px" className="object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => handleClearImage(3)}
+                              className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md z-10 cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <label
+                            htmlFor="imageFile3"
+                            className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-2 text-center"
+                          >
+                            <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                            <span className="text-[11px] font-semibold text-gray-500">Upload 3</span>
+                          </label>
+                        )}
+                        <input
+                          type="file"
+                          id="imageFile3"
+                          name="imageFile3"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, 3)}
+                          className="hidden"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        name="image3"
+                        placeholder="Or paste URL"
+                        defaultValue={editingProduct?.images?.[2] || ''}
+                        className="w-full px-2 py-1 text-[11px] border rounded-lg focus:ring-1 focus:ring-violet-600 outline-none"
+                      />
+                    </div>
+
+                    {/* Slot 4: Optional Additional Gallery */}
+                    <div className="flex flex-col gap-2 p-3 bg-white rounded-xl border border-gray-200">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                        4. Extra View (Optional)
+                      </span>
+                      <div className="relative aspect-square border-2 border-dashed border-gray-200 rounded-lg overflow-hidden flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                        {image4Preview ? (
+                          <>
+                            <Image src={image4Preview} alt="Preview 4" fill sizes="180px" className="object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => handleClearImage(4)}
+                              className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md z-10 cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <label
+                            htmlFor="imageFile4"
+                            className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-2 text-center"
+                          >
+                            <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                            <span className="text-[11px] font-semibold text-gray-500">Upload 4</span>
+                          </label>
+                        )}
+                        <input
+                          type="file"
+                          id="imageFile4"
+                          name="imageFile4"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, 4)}
+                          className="hidden"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        name="image4"
+                        placeholder="Or paste URL"
+                        defaultValue={editingProduct?.images?.[3] || ''}
+                        className="w-full px-2 py-1 text-[11px] border rounded-lg focus:ring-1 focus:ring-violet-600 outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Standard Product Images Section */
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                    Product Gallery Images (Up to 4)
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((index) => {
+                      const preview = index === 1 ? image1Preview : index === 2 ? image2Preview : index === 3 ? image3Preview : image4Preview
+
+                      return (
+                        <div key={index} className="flex flex-col gap-2">
+                          <div className="relative aspect-square border-2 border-dashed border-gray-200 rounded-xl overflow-hidden flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
+                            {preview ? (
+                              <>
+                                <Image src={preview} alt={`Preview ${index}`} fill sizes="150px" className="object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => handleClearImage(index)}
+                                  className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md z-10 cursor-pointer"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            ) : (
+                              <label
+                                htmlFor={`imageFile${index}`}
+                                className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-2 text-center"
+                              >
+                                <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                                <span className="text-[11px] font-semibold text-gray-500">Upload {index}</span>
+                              </label>
+                            )}
+                            <input
+                              type="file"
+                              id={`imageFile${index}`}
+                              name={`imageFile${index}`}
+                              accept="image/*"
+                              onChange={(e) => handleFileChange(e, index)}
+                              className="hidden"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            name={`image${index}`}
+                            placeholder="Or paste URL"
+                            defaultValue={editingProduct?.images?.[index - 1] || ''}
+                            className="w-full px-2 py-1 text-[11px] border rounded-lg focus:ring-1 focus:ring-violet-600 outline-none"
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <button

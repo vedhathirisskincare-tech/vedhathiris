@@ -157,30 +157,7 @@ export function ProductCard({ product }: ProductCardProps) {
       >
         {/* Thumbnail Image Section */}
         <div className="relative w-full h-40 sm:h-56 bg-skin-bg flex items-center justify-center p-2 sm:p-6 shrink-0">
-          {product.category === "Combo Packages" && imagesArray.length > 1 ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              {imagesArray.slice(0, 3).map((img: string, idx: number) => (
-                <div
-                  key={idx}
-                  className={`absolute w-[55%] max-w-[150px] aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.15)] border-2 sm:border-4 border-white transition-all duration-500 ease-out ${
-                    idx === 0
-                      ? "z-30 rotate-0 group-hover:-translate-y-3 group-hover:scale-105"
-                      : idx === 1
-                      ? "z-20 rotate-[12deg] translate-x-14 translate-y-1 group-hover:translate-x-20 group-hover:-translate-y-2 group-hover:rotate-[20deg]"
-                      : "z-10 -rotate-[12deg] -translate-x-14 translate-y-1 group-hover:-translate-x-20 group-hover:-translate-y-2 group-hover:-rotate-[20deg]"
-                  }`}
-                >
-                  <Image
-                    src={img}
-                    alt={`${product.name} - ${idx + 1}`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : imageUrl ? (
+          {imageUrl ? (
             <div className="relative w-full h-full overflow-hidden">
               <Image
                 src={imageUrl}

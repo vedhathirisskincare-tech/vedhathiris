@@ -185,10 +185,16 @@ export function ProductDetailClient({
                   <button
                     key={idx}
                     onClick={() => setMainImage(img)}
-                    className={`relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all ${mainImage === img ? 'border-skin-bold shadow-md' : 'border-transparent hover:border-skin-primary/50'
-                      }`}
+                    className={`relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all ${
+                      mainImage === img ? 'border-skin-bold shadow-md scale-102' : 'border-transparent hover:border-skin-primary/50'
+                    }`}
                   >
                     <Image src={img} alt={`Thumbnail ${idx + 1}`} fill sizes="96px" className="object-cover" />
+                    {product.category === "Combo Packages" && (
+                      <span className="absolute bottom-1 left-1 right-1 bg-black/60 backdrop-blur-xs text-[9px] font-bold text-white text-center py-0.5 rounded">
+                        {idx === 0 ? "Combo Grid" : idx === 1 ? "Pack View" : `View ${idx + 1}`}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
