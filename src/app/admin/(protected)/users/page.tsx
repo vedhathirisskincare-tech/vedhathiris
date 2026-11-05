@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { UsersClient } from './UsersClient'
+import { getVisitorPopupSetting } from '../actions'
 
 export default async function AdminUsersPage() {
   const supabase = await createClient()
@@ -9,5 +10,7 @@ export default async function AdminUsersPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
-  return <UsersClient initialUsers={users || []} />
+  const initialPopupEnabled = await getVisitorPopupSetting()
+
+  return <UsersClient initialUsers={users || []} initialPopupEnabled={initialPopupEnabled} />
 }

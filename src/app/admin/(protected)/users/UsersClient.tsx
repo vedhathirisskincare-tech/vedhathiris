@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { updateUserRole, deleteUser } from '../actions'
+import { updateUserRole, deleteUser, toggleVisitorPopupSetting } from '../actions'
 import { useToast } from '@/components/Toast'
+import { Sparkles } from 'lucide-react'
 
 type User = {
   id: string
@@ -13,11 +14,34 @@ type User = {
   created_at: string
 }
 
-export function UsersClient({ initialUsers: users }: { initialUsers: User[] }) {
+export function UsersClient({
+  initialUsers: users,
+  initialPopupEnabled = false,
+}: {
+  initialUsers: User[]
+  initialPopupEnabled?: boolean
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [popupEnabled, setPopupEnabled] = useState(initialPopupEnabled)
+  const [isUpdatingPopup, setIsUpdatingPopup] = useState(false)
   const toast = useToast()
+
+  const handleTogglePopup = async () => {
+    const nextState = !popupEnabled
+    setPopupEnabled(nextState)
+    setIsUpdatingPopup(true)
+    try {
+      await toggleVisitorPopupSetting(nextState)
+      toast.success(nextState ? 'Visitor login popup turned ON (appears in 3s)' : 'Visitor login popup turned OFF (hidden)')
+    } catch (err: any) {
+      setPopupEnabled(!nextState)
+      toast.error(err.message || 'Failed to update popup setting')
+    } finally {
+      setIsUpdatingPopup(false)
+    }
+  }
 
   const openEditModal = (user: User) => {
     setEditingUser(user)
@@ -55,8 +79,64 @@ export function UsersClient({ initialUsers: users }: { initialUsers: User[] }) {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Users</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Users</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Manage registered customer profiles, administrative roles, and visitor popup behavior.
+          </p>
+        </div>
+      </div>
+
+      {/* Visitor Welcome / Login Popup Control Card */}
+      <div className="p-5 sm:p-6 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 border border-violet-100">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-base sm:text-lg font-bold text-gray-900">
+                Visitor Login / Registration Popup
+              </h2>
+              <span className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full border ${
+                popupEnabled
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-gray-100 text-gray-600 border-gray-200'
+              }`}>
+                {popupEnabled ? '🟢 ON (Appears in 3s)' : '⚪ OFF (Hidden)'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-xl">
+              Dynamically control whether visitors see the login popup 3 seconds after opening the website. Turning it OFF hides the popup completely.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+            {popupEnabled ? 'Popup Active' : 'Popup Hidden'}
+          </span>
+          <button
+            type="button"
+            onClick={handleTogglePopup}
+            disabled={isUpdatingPopup}
+            className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              popupEnabled ? 'bg-violet-600' : 'bg-gray-300'
+            } ${isUpdatingPopup ? 'opacity-60 cursor-not-allowed' : ''}`}
+            title={popupEnabled ? 'Click to Turn OFF (Hide Popup)' : 'Click to Turn ON (Show in 3s)'}
+            aria-label="Toggle visitor popup on or off"
+          >
+            <span
+              className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                popupEnabled ? 'translate-x-6' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-50 border-b">

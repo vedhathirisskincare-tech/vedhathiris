@@ -41,22 +41,38 @@ export default function LoginPopup() {
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Automatic timer for general visitors (only once per session)
+  // Automatic timer for general visitors (dynamically controlled by admin toggle)
   useEffect(() => {
     // Avoid showing on admin or auth pages
     if (pathname.startsWith("/admin") || pathname.startsWith("/login") || pathname.startsWith("/signup")) {
       return;
     }
 
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const checkInitialVisitor = async () => {
       const hasSeenPopup = sessionStorage.getItem("hasSeenLoginPopup");
       if (hasSeenPopup) return;
 
       const supabase = createClient();
+
+      // Check dynamic admin toggle setting from database
+      const { data: popupSetting } = await supabase
+        .from("offers")
+        .select("is_active")
+        .eq("message", "VISITOR_LOGIN_POPUP")
+        .maybeSingle();
+
+      // If toggle is OFF (is_active === false) or not set, popup stays hidden
+      if (!popupSetting || !popupSetting.is_active) {
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
 
+      // If toggle is ON and visitor is not logged in, show popup in 3 seconds
       if (!user) {
-        const timer = setTimeout(() => {
+        timeoutId = setTimeout(() => {
           const currentSeen = sessionStorage.getItem("hasSeenLoginPopup");
           if (!currentSeen) {
             openAuthModal({
@@ -64,13 +80,15 @@ export default function LoginPopup() {
               view: "login",
             });
           }
-        }, 3500);
-
-        return () => clearTimeout(timer);
+        }, 3000);
       }
     };
 
     checkInitialVisitor();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [pathname, openAuthModal]);
 
   // Clear errors when view changes

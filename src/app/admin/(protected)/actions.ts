@@ -585,4 +585,55 @@ export async function updateHomepageFeaturedProducts(productIds: string[]) {
   }
 }
 
+// Visitor Login Popup Settings Actions
+export async function getVisitorPopupSetting(): Promise<boolean> {
+  try {
+    const supabase = getAdminSupabase()
+    const { data } = await supabase
+      .from('offers')
+      .select('is_active')
+      .eq('message', 'VISITOR_LOGIN_POPUP')
+      .maybeSingle()
+
+    // Default to false (hidden) if not explicitly set
+    return data ? Boolean(data.is_active) : false
+  } catch (error) {
+    console.error('Error fetching visitor popup setting:', error)
+    return false
+  }
+}
+
+export async function toggleVisitorPopupSetting(enabled: boolean) {
+  try {
+    const supabase = getAdminSupabase()
+    const { data: existing } = await supabase
+      .from('offers')
+      .select('id')
+      .eq('message', 'VISITOR_LOGIN_POPUP')
+      .maybeSingle()
+
+    if (existing) {
+      const { error } = await supabase
+        .from('offers')
+        .update({ is_active: enabled, updated_at: new Date().toISOString() })
+        .eq('id', existing.id)
+      if (error) throw new Error(error.message)
+    } else {
+      const { error } = await supabase
+        .from('offers')
+        .insert({ message: 'VISITOR_LOGIN_POPUP', is_active: enabled })
+      if (error) throw new Error(error.message)
+    }
+
+    revalidatePath('/')
+    revalidatePath('/admin/users')
+    revalidatePath('/admin')
+    return { success: true, enabled }
+  } catch (error: any) {
+    console.error('Error toggling visitor popup setting:', error)
+    throw new Error(error.message || 'Failed to update popup setting')
+  }
+}
+
+
 
