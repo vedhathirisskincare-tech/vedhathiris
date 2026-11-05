@@ -11,6 +11,7 @@ import Script from "next/script";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { useToast } from "./Toast";
+import { trackMetaEvent } from "@/utils/metaPixel";
 
 export default function CartDrawer() {
   const { 
@@ -209,6 +210,19 @@ export default function CartDrawer() {
 
     setIsCheckingOut(true);
 
+    // Track InitiateCheckout for Meta Pixel ad campaigns
+    trackMetaEvent("InitiateCheckout", {
+      content_ids: items.map((item) => item.id),
+      contents: items.map((item) => ({
+        id: item.id,
+        quantity: item.quantity,
+        item_price: item.price,
+      })),
+      num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+      value: finalTotal,
+      currency: "INR",
+    });
+
     try {
       // 2. Create Razorpay order on server with the discounted final total
       const chargeAmount = Math.max(1, finalTotal);
@@ -258,6 +272,20 @@ export default function CartDrawer() {
           );
 
           if (result.success && result.orderId) {
+            // Track Purchase for Meta Pixel ad conversion
+            trackMetaEvent("Purchase", {
+              content_type: "product",
+              contents: items.map((item) => ({
+                id: item.id,
+                quantity: item.quantity,
+                item_price: item.price,
+              })),
+              content_ids: items.map((item) => item.id),
+              value: finalTotal,
+              currency: "INR",
+              num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+            });
+
             clearCart();
             setIsOpen(false);
             router.push(`/invoice/${result.orderId}?toast=payment_success`);

@@ -10,6 +10,7 @@ import { ShieldCheck, Leaf, Heart, ArrowLeft, ArrowRight } from "lucide-react";
 import { ProductCard, type Product, type ProductSize } from "@/components/ProductCard";
 import { useToast } from "@/components/Toast";
 import { ProductReviews, type Review } from "./ProductReviews";
+import { trackMetaEvent } from "@/utils/metaPixel";
 
 export function ProductDetailClient({
   product,
@@ -92,6 +93,18 @@ export function ProductDetailClient({
   const discountPercent = hasDiscount && currentMrp
     ? Math.round(((currentMrp - currentPrice) / currentMrp) * 100)
     : 0;
+
+  // Track ViewContent for Meta Pixel product campaigns
+  useEffect(() => {
+    trackMetaEvent("ViewContent", {
+      content_name: product.name,
+      content_category: product.category,
+      content_ids: [product.id],
+      content_type: "product",
+      value: currentPrice,
+      currency: "INR",
+    });
+  }, [product.id, product.name, product.category, currentPrice]);
   const savings = hasDiscount && currentMrp ? currentMrp - currentPrice : 0;
 
   return (

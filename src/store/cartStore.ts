@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Product } from '@/components/ProductCard'
 import type { Coupon } from '@/app/actions/coupon'
+import { trackMetaEvent } from '@/utils/metaPixel'
 
 export interface CartItem extends Product {
   quantity: number
@@ -40,6 +41,16 @@ export const useCartStore = create<CartState>()(
           }
 
           const cartKey = chosenSize ? `${product.id}-${chosenSize}` : `${product.id}-default`
+
+          // Track AddToCart for Meta Pixel campaigns
+          trackMetaEvent('AddToCart', {
+            content_name: product.name,
+            content_category: product.category,
+            content_ids: [product.id],
+            content_type: 'product',
+            value: chosenPrice,
+            currency: 'INR',
+          })
 
           const existingItem = state.items.find(
             (item) => item.cartItemId === cartKey || (!item.cartItemId && item.id === product.id && item.selectedSize === chosenSize)
