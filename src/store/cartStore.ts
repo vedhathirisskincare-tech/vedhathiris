@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { Product } from '@/components/ProductCard'
 import type { Coupon } from '@/app/actions/coupon'
 import { trackMetaEvent } from '@/utils/metaPixel'
+import { sendGTMEvent } from '@/utils/gtm'
 
 export interface CartItem extends Product {
   quantity: number
@@ -50,6 +51,24 @@ export const useCartStore = create<CartState>()(
             content_type: 'product',
             value: chosenPrice,
             currency: 'INR',
+          })
+
+          // Track add_to_cart for Google Tag Manager / Analytics
+          sendGTMEvent({
+            event: 'add_to_cart',
+            ecommerce: {
+              currency: 'INR',
+              value: chosenPrice,
+              items: [
+                {
+                  item_id: product.id,
+                  item_name: product.name,
+                  item_category: product.category,
+                  price: chosenPrice,
+                  quantity: 1,
+                },
+              ],
+            },
           })
 
           const existingItem = state.items.find(

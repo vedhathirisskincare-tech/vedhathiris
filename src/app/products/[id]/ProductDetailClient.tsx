@@ -11,6 +11,7 @@ import { ProductCard, type Product, type ProductSize } from "@/components/Produc
 import { useToast } from "@/components/Toast";
 import { ProductReviews, type Review } from "./ProductReviews";
 import { trackMetaEvent } from "@/utils/metaPixel";
+import { sendGTMEvent } from "@/utils/gtm";
 
 export function ProductDetailClient({
   product,
@@ -94,7 +95,7 @@ export function ProductDetailClient({
     ? Math.round(((currentMrp - currentPrice) / currentMrp) * 100)
     : 0;
 
-  // Track ViewContent for Meta Pixel product campaigns
+  // Track ViewContent for Meta Pixel & Google Analytics product tracking
   useEffect(() => {
     trackMetaEvent("ViewContent", {
       content_name: product.name,
@@ -103,6 +104,23 @@ export function ProductDetailClient({
       content_type: "product",
       value: currentPrice,
       currency: "INR",
+    });
+
+    sendGTMEvent({
+      event: "view_item",
+      ecommerce: {
+        currency: "INR",
+        value: currentPrice,
+        items: [
+          {
+            item_id: product.id,
+            item_name: product.name,
+            item_category: product.category,
+            price: currentPrice,
+            quantity: 1,
+          },
+        ],
+      },
     });
   }, [product.id, product.name, product.category, currentPrice]);
   const savings = hasDiscount && currentMrp ? currentMrp - currentPrice : 0;

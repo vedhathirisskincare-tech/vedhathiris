@@ -12,6 +12,7 @@ import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { useToast } from "./Toast";
 import { trackMetaEvent } from "@/utils/metaPixel";
+import { sendGTMEvent } from "@/utils/gtm";
 
 export default function CartDrawer() {
   const { 
@@ -284,6 +285,23 @@ export default function CartDrawer() {
               value: finalTotal,
               currency: "INR",
               num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+            });
+
+            // Track purchase for Google Tag Manager / Analytics
+            sendGTMEvent({
+              event: "purchase",
+              ecommerce: {
+                transaction_id: result.orderId,
+                value: finalTotal,
+                currency: "INR",
+                items: items.map((item) => ({
+                  item_id: item.id,
+                  item_name: item.name,
+                  item_category: item.category,
+                  price: item.price,
+                  quantity: item.quantity,
+                })),
+              },
             });
 
             clearCart();

@@ -10,6 +10,7 @@ import { ToastProvider } from "../components/Toast";
 import LoginPopup from "../components/LoginPopup";
 import ScrollManager from "../components/ScrollManager";
 import MetaPixel from "../components/MetaPixel";
+import GoogleTagManager from "../components/GoogleTagManager";
 
 
 import { SITE_URL, getLanguageAlternates } from "@/utils/site";
@@ -97,6 +98,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans text-gray-900 bg-white">
+        <GoogleTagManager />
         <MetaPixel />
         <ToastProvider>
           <ScrollManager />
