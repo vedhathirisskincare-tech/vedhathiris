@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/utils/supabase/server';
+import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js';
 import { notFound, redirect } from 'next/navigation';
-import { FileText, Printer } from 'lucide-react';
+import { cookies } from 'next/headers';
+import Link from 'next/link';
+import { FileText, ShieldCheck } from 'lucide-react';
 import { PrintButton } from './PrintButton';
 
 export const metadata: Metadata = {
@@ -18,67 +21,108 @@ export default async function InvoicePage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  // 1. Check if user is authenticated as Store Admin via admin_session cookie
+  const cookieStore = await cookies();
+  const adminSession = cookieStore.get('admin_session');
+  const isAdmin = adminSession?.value === 'authenticated';
 
-  if (authError || !user) {
-    redirect('/login');
+  // 2. If not admin, check customer auth
+  let currentUser: any = null;
+  if (!isAdmin) {
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user;
+    } catch {
+      currentUser = null;
+    }
   }
 
-  const { data: order, error: orderError } = await supabase
+  // 3. Use admin service role client to fetch the order and avoid RLS or join blocks
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const db = createSupabaseAdminClient(supabaseUrl, supabaseServiceKey);
+
+  const { data: order, error: orderError } = await db
     .from('orders')
     .select('*, order_items(*)')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (orderError) {
-    console.error('Error fetching order:', orderError);
+    console.error('Error fetching order for invoice:', orderError);
   }
 
   if (!order) {
     notFound();
   }
 
-  // Fetch profile separately to avoid foreign key join issues
+  // 4. Access Authorization:
+  // - Admin always has full access
+  // - Registered customer has access to their own order
+  // - Guest orders (order.user_id === null) are accessible directly via order link
+  const isOwner = Boolean(currentUser && order.user_id && order.user_id === currentUser.id);
+  const isGuestOrder = !order.user_id;
+
+  if (!isAdmin && !isOwner && !isGuestOrder) {
+    redirect(`/login?redirect=/invoice/${id}`);
+  }
+
+  // 5. Fetch profile details if user_id exists
   if (order.user_id) {
-    const { data: profile } = await supabase
+    const { data: profile } = await db
       .from('profiles')
-      .select('full_name, email')
+      .select('full_name, email, phone')
       .eq('id', order.user_id)
-      .single();
-    
+      .maybeSingle();
+
     order.profiles = profile;
   }
 
-  // Fetch products separately to avoid missing foreign key issues
+  // 6. Fetch products details for items
   if (order.order_items && order.order_items.length > 0) {
     const productIds = order.order_items.map((item: any) => item.product_id);
-    const { data: products } = await supabase
+    const { data: products } = await db
       .from('products')
-      .select('id, name')
+      .select('id, name, images')
       .in('id', productIds);
-      
+
     if (products) {
       order.order_items.forEach((item: any) => {
-        const product = products.find(p => p.id === item.product_id);
+        const product = products.find((p) => p.id === item.product_id);
         if (product) {
-          item.products = { name: product.name };
+          item.products = { name: product.name, image: product.images?.[0] };
         }
       });
     }
   }
 
-  // Basic authorization: user must own order or be admin
-  // Since we don't have a strict admin check here, we'll just check if it's the user's order
-  // Assuming admins have access to view any order (you might want a better admin check)
-  const isOwner = order.user_id === user.id;
-  // If not owner, we should ideally check if admin. For now, we will allow it since admins link here.
-
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-3xl mx-auto">
-        <div className="flex justify-end mb-6 print:hidden">
+        <div className="flex items-center justify-between mb-6 print:hidden">
+          {isAdmin ? (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/admin/orders"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-violet-700 transition-colors shadow-2xs"
+              >
+                ← Back to Admin Orders
+              </Link>
+              <span className="text-[11px] font-bold bg-violet-100 text-violet-800 px-2.5 py-1 rounded-lg border border-violet-200">
+                Admin View
+              </span>
+            </div>
+          ) : (
+            <Link
+              href="/profile?tab=orders"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-violet-700 transition-colors shadow-2xs"
+            >
+              ← Back to My Orders
+            </Link>
+          )}
+
           <PrintButton />
         </div>
 
@@ -89,7 +133,7 @@ export default async function InvoicePage({
               <h1 className="text-3xl font-serif font-bold text-violet-900 flex items-center gap-2 mb-1">
                 <FileText className="text-violet-600" /> Vedhathiri's
               </h1>
-              <p className="text-gray-500 text-sm">Premium Personal Care</p>
+              <p className="text-gray-500 text-sm">Natural Skincare & Personal Care</p>
             </div>
             <div className="text-right">
               <h2 className="text-xl font-bold text-gray-900 mb-1">INVOICE</h2>
@@ -104,14 +148,27 @@ export default async function InvoicePage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
             <div>
               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Billed To</h3>
-              <p className="text-lg font-medium text-gray-900">{order.profiles?.full_name || 'Customer'}</p>
-              <p className="text-gray-600">{order.profiles?.email}</p>
+              <p className="text-lg font-medium text-gray-900">
+                {order.customer_name || order.profiles?.full_name || 'Customer'}
+              </p>
+              <p className="text-gray-600 text-sm">
+                {order.profiles?.email || 'Guest Customer'}
+              </p>
+              {(order.contact_number || order.profiles?.phone) && (
+                <p className="text-gray-600 text-sm mt-0.5">
+                  Phone: {order.contact_number || order.profiles?.phone}
+                </p>
+              )}
             </div>
             {order.shipping_address && (
               <div>
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Shipping To</h3>
-                <p className="text-lg font-medium text-gray-900">{order.customer_name || order.profiles?.full_name || 'Customer'}</p>
-                <p className="text-gray-600 font-medium text-sm">Phone: <span className="font-normal text-gray-500">{order.contact_number || order.profiles?.phone || 'N/A'}</span></p>
+                <p className="text-lg font-medium text-gray-900">
+                  {order.customer_name || order.profiles?.full_name || 'Customer'}
+                </p>
+                <p className="text-gray-600 font-medium text-sm">
+                  Phone: <span className="font-normal text-gray-500">{order.contact_number || order.profiles?.phone || 'N/A'}</span>
+                </p>
                 <p className="text-gray-500 text-sm whitespace-pre-line mt-1">{order.shipping_address}</p>
               </div>
             )}
@@ -128,7 +185,7 @@ export default async function InvoicePage({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {order.order_items.map((item: any) => (
+              {order.order_items?.map((item: any) => (
                 <tr key={item.id}>
                   <td className="py-4">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -145,6 +202,13 @@ export default async function InvoicePage({
                   <td className="py-4 text-right font-medium text-gray-900">₹{item.price * item.quantity}</td>
                 </tr>
               ))}
+              {(!order.order_items || order.order_items.length === 0) && (
+                <tr>
+                  <td colSpan={4} className="py-4 text-center text-gray-500 text-sm">
+                    Total order items: 1 (Standard Order)
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
 
@@ -183,8 +247,8 @@ export default async function InvoicePage({
           
           {/* Footer */}
           <div className="mt-16 pt-8 border-t border-gray-100 text-center text-gray-500 text-sm print:mt-8">
-            <p className="font-medium text-gray-700 mb-1">Thank you for your purchase!</p>
-            <p>If you have any questions about this invoice, please contact support@vedhathiris.com</p>
+            <p className="font-medium text-gray-700 mb-1">Thank you for choosing Vedhathiri's!</p>
+            <p>100% Chemical-free & Natural Personal Care • Chetpet, Chennai</p>
           </div>
         </div>
       </div>

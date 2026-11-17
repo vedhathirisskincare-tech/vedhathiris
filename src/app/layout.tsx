@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header";
@@ -11,6 +12,7 @@ import LoginPopup from "../components/LoginPopup";
 import ScrollManager from "../components/ScrollManager";
 import MetaPixel from "../components/MetaPixel";
 import GoogleTagManager from "../components/GoogleTagManager";
+import AiChatWidget from "../components/AiAssistant/AiChatWidget";
 
 
 import { SITE_URL, getLanguageAlternates } from "@/utils/site";
@@ -98,6 +100,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans text-gray-900 bg-white">
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
         <GoogleTagManager />
         <MetaPixel />
         <ToastProvider>
@@ -111,6 +114,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <CartDrawer />
+          <AiChatWidget />
 
         </ToastProvider>
       </body>

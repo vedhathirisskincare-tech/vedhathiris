@@ -1,13 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProductCard, Product } from "@/components/ProductCard";
 
-export function ProductsListClient({ products }: { products: Product[] }) {
+function CategoryQuerySync({
+  categories,
+  onCategoryMatch,
+}: {
+  categories: string[];
+  onCategoryMatch: (matchedCategory: string) => void;
+}) {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
 
+  useEffect(() => {
+    if (categoryParam) {
+      const normalizedParam = categoryParam.replace(/\+/g, " ").toLowerCase();
+      const matched = categories.find((c) => c.toLowerCase() === normalizedParam);
+      if (matched) {
+        onCategoryMatch(matched);
+      } else {
+        onCategoryMatch(categoryParam);
+      }
+    }
+  }, [categoryParam, categories, onCategoryMatch]);
+
+  return null;
+}
+
+export function ProductsListClient({ products }: { products: Product[] }) {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [activeSubcategory, setActiveSubcategory] = useState<string>("All");
 
@@ -20,19 +42,10 @@ export function ProductsListClient({ products }: { products: Product[] }) {
 
   const categories = ["All", "Haircare", "Face Care", "Soap", "Shampoo", "Hair Oil", "Combo Packages"];
 
-  useEffect(() => {
-    if (categoryParam) {
-      const normalizedParam = categoryParam.replace(/\+/g, ' ').toLowerCase();
-      const matched = categories.find(c => c.toLowerCase() === normalizedParam);
-      if (matched) {
-        setActiveCategory(matched);
-        setActiveSubcategory("All");
-      } else {
-        setActiveCategory(categoryParam);
-        setActiveSubcategory("All");
-      }
-    }
-  }, [categoryParam]);
+  const handleUrlCategory = useCallback((cat: string) => {
+    setActiveCategory(cat);
+    setActiveSubcategory("All");
+  }, []);
 
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
@@ -66,6 +79,10 @@ export function ProductsListClient({ products }: { products: Product[] }) {
 
   return (
     <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+      <Suspense fallback={null}>
+        <CategoryQuerySync categories={categories} onCategoryMatch={handleUrlCategory} />
+      </Suspense>
+
       {/* Sidebar Filters */}
       <aside className="w-full md:w-64 shrink-0">
         <div className="bg-skin-white rounded-2xl p-4 md:p-6 shadow-sm border border-skin-primary/50 sticky top-24 md:top-28">

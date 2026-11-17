@@ -786,6 +786,55 @@ export async function toggleVisitorPopupSetting(enabled: boolean) {
   }
 }
 
+// AI Shopping Assistant Bot Actions (Admin toggle to show/hide chat bot on user side)
+export async function getAiAssistantSetting(): Promise<boolean> {
+  try {
+    const supabase = getAdminSupabase()
+    const { data } = await supabase
+      .from('offers')
+      .select('is_active')
+      .eq('message', 'AI_ASSISTANT_ENABLED')
+      .maybeSingle()
+
+    // Default to false (hidden) if not explicitly set
+    return data ? Boolean(data.is_active) : false
+  } catch (error) {
+    console.error('Error fetching AI assistant setting:', error)
+    return false
+  }
+}
+
+export async function toggleAiAssistantSetting(enabled: boolean) {
+  try {
+    const supabase = getAdminSupabase()
+    const { data: existing } = await supabase
+      .from('offers')
+      .select('id')
+      .eq('message', 'AI_ASSISTANT_ENABLED')
+      .maybeSingle()
+
+    if (existing) {
+      const { error } = await supabase
+        .from('offers')
+        .update({ is_active: enabled, updated_at: new Date().toISOString() })
+        .eq('id', existing.id)
+      if (error) throw new Error(error.message)
+    } else {
+      const { error } = await supabase
+        .from('offers')
+        .insert({ message: 'AI_ASSISTANT_ENABLED', is_active: enabled })
+      if (error) throw new Error(error.message)
+    }
+
+    revalidatePath('/')
+    revalidatePath('/admin')
+    return { success: true, enabled }
+  } catch (error: any) {
+    console.error('Error toggling AI assistant setting:', error)
+    throw new Error(error.message || 'Failed to update AI assistant setting')
+  }
+}
+
 // Products Display Order Actions (Dynamic arrangement of products in /products page)
 export async function getProductsDisplayOrder(): Promise<string[]> {
   try {

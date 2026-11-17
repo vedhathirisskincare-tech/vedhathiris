@@ -47,6 +47,50 @@ export async function createRazorpayOrder(amount: number) {
   }
 }
 
+async function ensureUserProfileExists(
+  adminSupabase: any,
+  userId: string,
+  deliveryInfo?: { customer_name?: string | null; contact_number?: string | null }
+) {
+  try {
+    const { data: existingProfile } = await adminSupabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      let email: string | null = null;
+      let fullName: string | null = deliveryInfo?.customer_name || 'Customer';
+      let phone: string | null = deliveryInfo?.contact_number || null;
+
+      try {
+        const { data: authData } = await adminSupabase.auth.admin.getUserById(userId);
+        if (authData?.user) {
+          email = authData.user.email || null;
+          fullName = authData.user.user_metadata?.full_name || fullName;
+          phone = authData.user.user_metadata?.phone_number || phone;
+        }
+      } catch (authErr) {
+        console.warn('Could not query auth user for profile creation:', authErr);
+      }
+
+      await adminSupabase.from('profiles').upsert(
+        {
+          id: userId,
+          email,
+          full_name: fullName,
+          phone,
+          role: 'user',
+        },
+        { onConflict: 'id' }
+      );
+    }
+  } catch (err) {
+    console.warn('Error in ensureUserProfileExists:', err);
+  }
+}
+
 export async function verifyPaymentAndSaveOrder(
   paymentData: {
     razorpay_order_id: string;
@@ -85,6 +129,11 @@ export async function verifyPaymentAndSaveOrder(
     // Use admin client to bypass RLS for inserting orders
     const adminSupabase = getAdminSupabase();
 
+    // Ensure profile row exists in profiles table so foreign key constraint never fails
+    if (user?.id) {
+      await ensureUserProfileExists(adminSupabase, user.id, deliveryInfo);
+    }
+
     // 1. Create Order
     const orderPayload: any = {
       user_id: user?.id || null, // Allow anonymous orders if user not logged in
@@ -117,6 +166,18 @@ export async function verifyPaymentAndSaveOrder(
       const fallbackResult = await adminSupabase
         .from('orders')
         .insert(orderPayload)
+        .select()
+        .single();
+      order = fallbackResult.data;
+      orderError = fallbackResult.error;
+    }
+
+    // Fallback if user_id foreign key constraint violates
+    if (orderError && (orderError.code === '23503' || orderError.message?.includes('orders_user_id_fkey') || orderError.message?.includes('profiles'))) {
+      console.warn('Foreign key violation for user_id on orders. Retrying order creation without user_id to ensure customer order is saved.');
+      const fallbackResult = await adminSupabase
+        .from('orders')
+        .insert({ ...orderPayload, user_id: null })
         .select()
         .single();
       order = fallbackResult.data;

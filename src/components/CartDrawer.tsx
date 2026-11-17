@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { createRazorpayOrder, verifyPaymentAndSaveOrder } from "@/app/actions/payment";
 import { getAvailableCoupons, validateCoupon, type Coupon } from "@/app/actions/coupon";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { useToast } from "./Toast";
@@ -183,6 +182,19 @@ export default function CartDrawer() {
     toast.info("Coupon removed.");
   };
 
+  // Helper to dynamically ensure Razorpay checkout SDK is loaded
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined") return resolve(false);
+      if ((window as any).Razorpay) return resolve(true);
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleCheckout = async () => {
     if (items.length === 0) return;
     
@@ -191,51 +203,63 @@ export default function CartDrawer() {
       return;
     }
 
-    // 1. Verify User Authentication Status
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      // Guest user detected! Stop payment and show the Auth Required Modal popup
-      openAuthModal({
-        mode: "checkout",
-        view: "login",
-        title: "Login to Place Your Order",
-        subtitle: "Please log in or create an account before completing payment. Your cart and delivery address are saved!",
-        onSuccess: () => {
-          toast.success("Welcome! Click Pay Now to proceed with your payment.");
-        }
-      });
-      return;
-    }
-
     setIsCheckingOut(true);
 
-    // Track InitiateCheckout for Meta Pixel ad campaigns
-    trackMetaEvent("InitiateCheckout", {
-      content_ids: items.map((item) => item.id),
-      contents: items.map((item) => ({
-        id: item.id,
-        quantity: item.quantity,
-        item_price: item.price,
-      })),
-      num_items: items.reduce((sum, item) => sum + item.quantity, 0),
-      value: finalTotal,
-      currency: "INR",
-    });
-
     try {
-      // 2. Create Razorpay order on server with the discounted final total
-      const chargeAmount = Math.max(1, finalTotal);
-      const { success, order, error, keyId } = await createRazorpayOrder(chargeAmount);
-      
-      if (!success || !order) {
-        toast.error(error || "Failed to create order. Please try again.");
+      // 1. Ensure Razorpay checkout script is loaded
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast.error("Unable to load payment gateway. Please check your internet connection.");
         setIsCheckingOut(false);
         return;
       }
 
-      const razorpayKey = keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      // Track InitiateCheckout for Meta Pixel ad campaigns
+      try {
+        trackMetaEvent("InitiateCheckout", {
+          content_ids: items.map((item) => item.id),
+          contents: items.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+            item_price: item.price,
+          })),
+          num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+          value: finalTotal,
+          currency: "INR",
+        });
+      } catch (trackErr) {
+        console.warn("InitiateCheckout tracking notice:", trackErr);
+      }
+
+      // 2. Create Razorpay order via dedicated API endpoint (fallback to server action if needed)
+      const chargeAmount = Math.max(1, finalTotal);
+      let orderData: { success: boolean; order?: any; keyId?: string; error?: string } | null = null;
+
+      try {
+        const createRes = await fetch("/api/payment/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: chargeAmount }),
+        });
+        if (createRes.ok) {
+          orderData = await createRes.json();
+        }
+      } catch (fetchErr) {
+        console.warn("Direct API create-order fetch error, attempting server action fallback:", fetchErr);
+      }
+
+      if (!orderData || !orderData.success) {
+        // Fallback to Server Action
+        orderData = await createRazorpayOrder(chargeAmount);
+      }
+
+      if (!orderData || !orderData.success || !orderData.order) {
+        toast.error(orderData?.error || "Failed to create order. Please try again.");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      const razorpayKey = orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
       if (!razorpayKey) {
         toast.error("Razorpay Authentication Key is missing. Please check your environment configuration.");
         setIsCheckingOut(false);
@@ -245,98 +269,145 @@ export default function CartDrawer() {
       // 3. Initialize Razorpay Checkout
       const options = {
         key: razorpayKey,
-        amount: order.amount,
-        currency: order.currency,
-        name: "Vedhathiri's Premium Personal Care",
+        amount: orderData.order.amount,
+        currency: orderData.order.currency || "INR",
+        name: "Vedhathiri's Skin Care",
         description: appliedCoupon ? `Order with Coupon ${appliedCoupon.code}` : "Order Checkout",
-        order_id: order.id,
+        order_id: orderData.order.id,
         handler: async function (response: any) {
-          // 4. Verify payment and save order on success
+          try {
+            setIsCheckingOut(true);
             const fullAddress = `${houseNo.trim()}\n${street.trim()}\n${city.trim()} - ${pincode.trim()}`;
-            const result = await verifyPaymentAndSaveOrder(
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              },
-              items,
-              finalTotal,
-              {
-                customer_name: deliveryName.trim(),
-                contact_number: deliveryPhone.trim(),
-                shipping_address: fullAddress,
-              },
-            {
-              coupon_code: appliedCoupon?.code || null,
-              discount_amount: discount,
+
+            let verifyResult: { success: boolean; orderId?: string; error?: string } | null = null;
+            try {
+              const verifyRes = await fetch("/api/payment/verify-order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  paymentData: {
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                  },
+                  items,
+                  totalAmount: finalTotal,
+                  deliveryInfo: {
+                    customer_name: deliveryName.trim(),
+                    contact_number: deliveryPhone.trim(),
+                    shipping_address: fullAddress,
+                  },
+                  couponInfo: {
+                    coupon_code: appliedCoupon?.code || null,
+                    discount_amount: discount,
+                  },
+                  userId: currentUser?.id || null,
+                }),
+              });
+              if (verifyRes.ok) {
+                verifyResult = await verifyRes.json();
+              }
+            } catch (vFetchErr) {
+              console.warn("Direct verify-order API fetch error, attempting server action fallback:", vFetchErr);
             }
-          );
 
-          if (result.success && result.orderId) {
-            // Track Purchase for Meta Pixel ad conversion
-            trackMetaEvent("Purchase", {
-              content_type: "product",
-              contents: items.map((item) => ({
-                id: item.id,
-                quantity: item.quantity,
-                item_price: item.price,
-              })),
-              content_ids: items.map((item) => item.id),
-              value: finalTotal,
-              currency: "INR",
-              num_items: items.reduce((sum, item) => sum + item.quantity, 0),
-            });
+            if (!verifyResult || !verifyResult.success) {
+              verifyResult = await verifyPaymentAndSaveOrder(
+                {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                },
+                items,
+                finalTotal,
+                {
+                  customer_name: deliveryName.trim(),
+                  contact_number: deliveryPhone.trim(),
+                  shipping_address: fullAddress,
+                },
+                {
+                  coupon_code: appliedCoupon?.code || null,
+                  discount_amount: discount,
+                }
+              );
+            }
 
-            // Track purchase for Google Tag Manager / Analytics
-            sendGTMEvent({
-              event: "purchase",
-              ecommerce: {
-                transaction_id: result.orderId,
-                value: finalTotal,
-                currency: "INR",
-                items: items.map((item) => ({
-                  item_id: item.id,
-                  item_name: item.name,
-                  item_category: item.category,
-                  price: item.price,
-                  quantity: item.quantity,
-                })),
-              },
-            });
+            if (verifyResult?.success && verifyResult.orderId) {
+              try {
+                // Track Purchase for Meta Pixel ad conversion
+                trackMetaEvent("Purchase", {
+                  content_type: "product",
+                  contents: items.map((item) => ({
+                    id: item.id,
+                    quantity: item.quantity,
+                    item_price: item.price,
+                  })),
+                  content_ids: items.map((item) => item.id),
+                  value: finalTotal,
+                  currency: "INR",
+                  num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+                });
 
-            clearCart();
-            setIsOpen(false);
-            router.push(`/invoice/${result.orderId}?toast=payment_success`);
-          } else {
-            console.error("Payment verification result:", result);
-            toast.error(`Payment verification failed: ${result.error || 'Unknown error'}. Please contact support.`);
+                // Track purchase for Google Tag Manager / Analytics
+                sendGTMEvent({
+                  event: "purchase",
+                  ecommerce: {
+                    transaction_id: verifyResult.orderId,
+                    value: finalTotal,
+                    currency: "INR",
+                    items: items.map((item) => ({
+                      item_id: item.id,
+                      item_name: item.name,
+                      item_category: item.category,
+                      price: item.price,
+                      quantity: item.quantity,
+                    })),
+                  },
+                });
+              } catch (trackingErr) {
+                console.warn("Purchase analytics tracking notice:", trackingErr);
+              }
+
+              clearCart();
+              setIsOpen(false);
+              setIsCheckingOut(false);
+              toast.success("Payment successful! Loading your invoice...");
+              window.location.href = `/invoice/${verifyResult.orderId}?toast=payment_success`;
+            } else {
+              setIsCheckingOut(false);
+              toast.error(`Payment verification failed: ${verifyResult?.error || 'Unknown error'}. Please contact support.`);
+            }
+          } catch (verificationErr: any) {
+            console.error("Verification error:", verificationErr);
+            setIsCheckingOut(false);
+            toast.error("An error occurred while verifying your payment.");
           }
         },
         prefill: {
-          name: deliveryName || user.user_metadata?.full_name || "Valued Customer",
-          contact: deliveryPhone || user.user_metadata?.phone_number || "",
-          email: user.email || "",
+          name: deliveryName.trim() || currentUser?.user_metadata?.full_name || "Valued Customer",
+          contact: deliveryPhone.trim() || currentUser?.user_metadata?.phone_number || "",
+          email: currentUser?.email || "",
         },
         theme: {
           color: "#7c3aed", // violet-600
         },
         modal: {
           ondismiss: function () {
-            toast.error("Payment cancelled.");
+            setIsCheckingOut(false);
           }
         }
       };
 
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (response: any) {
-        toast.error(`Payment Failed: ${response.error.description}`);
+        toast.error(`Payment Failed: ${response.error?.description || "Payment could not be completed."}`);
+        setIsCheckingOut(false);
       });
       rzp.open();
 
-    } catch (err) {
-      console.error(err);
-      toast.error("An error occurred during checkout.");
-    } finally {
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      toast.error(err.message || "An error occurred during checkout.");
       setIsCheckingOut(false);
     }
   };
@@ -345,7 +416,6 @@ export default function CartDrawer() {
 
   return (
     <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <div className="fixed inset-0 z-50 flex justify-end">
         {/* Overlay */}
         <div 

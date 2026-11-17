@@ -6,7 +6,7 @@ import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Star }
 import { adminLogout } from '../login/actions'
 import { AdminMobileNav } from './AdminMobileNav'
 import { AdminSidebar } from './AdminSidebar'
-import { getVisitorPopupSetting } from './actions'
+import { getVisitorPopupSetting, getAiAssistantSetting } from './actions'
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard',
@@ -28,15 +28,18 @@ export default async function AdminLayout({
     redirect('/admin/login')
   }
 
-  const initialPopupEnabled = await getVisitorPopupSetting()
+  const [initialPopupEnabled, initialAiChatEnabled] = await Promise.all([
+    getVisitorPopupSetting(),
+    getAiAssistantSetting(),
+  ])
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       {/* Mobile Nav Bar */}
-      <AdminMobileNav initialPopupEnabled={initialPopupEnabled} />
+      <AdminMobileNav initialPopupEnabled={initialPopupEnabled} initialAiChatEnabled={initialAiChatEnabled} />
 
       {/* Admin Sidebar */}
-      <AdminSidebar initialPopupEnabled={initialPopupEnabled} />
+      <AdminSidebar initialPopupEnabled={initialPopupEnabled} initialAiChatEnabled={initialAiChatEnabled} />
 
       {/* Admin Content */}
       <main className="flex-1 p-4 md:p-8 min-w-0">

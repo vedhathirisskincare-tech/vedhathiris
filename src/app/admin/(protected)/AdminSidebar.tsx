@@ -3,15 +3,38 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShoppingBag, Users, Package, LogOut, Tag, Mail, Star, Ticket, ChevronLeft, ChevronRight, Sparkles, SlidersHorizontal } from 'lucide-react'
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Users,
+  Package,
+  LogOut,
+  Tag,
+  Mail,
+  Star,
+  Ticket,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  SlidersHorizontal,
+  Bot
+} from 'lucide-react'
 import { adminLogout } from '../login/actions'
-import { toggleVisitorPopupSetting } from './actions'
+import { toggleVisitorPopupSetting, toggleAiAssistantSetting } from './actions'
 import { useToast } from '@/components/Toast'
 
-export function AdminSidebar({ initialPopupEnabled = false }: { initialPopupEnabled?: boolean }) {
+export function AdminSidebar({
+  initialPopupEnabled = false,
+  initialAiChatEnabled = false,
+}: {
+  initialPopupEnabled?: boolean
+  initialAiChatEnabled?: boolean
+}) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [popupEnabled, setPopupEnabled] = useState(initialPopupEnabled)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const [aiChatEnabled, setAiChatEnabled] = useState(initialAiChatEnabled)
+  const [isUpdatingPopup, setIsUpdatingPopup] = useState(false)
+  const [isUpdatingAi, setIsUpdatingAi] = useState(false)
   const pathname = usePathname()
   const toast = useToast()
 
@@ -20,7 +43,7 @@ export function AdminSidebar({ initialPopupEnabled = false }: { initialPopupEnab
     e.stopPropagation()
     const nextState = !popupEnabled
     setPopupEnabled(nextState)
-    setIsUpdating(true)
+    setIsUpdatingPopup(true)
     try {
       await toggleVisitorPopupSetting(nextState)
       toast.success(nextState ? 'Visitor login popup turned ON (appears in 3s)' : 'Visitor login popup turned OFF (hidden)')
@@ -28,7 +51,24 @@ export function AdminSidebar({ initialPopupEnabled = false }: { initialPopupEnab
       setPopupEnabled(!nextState)
       toast.error(err.message || 'Failed to update popup setting')
     } finally {
-      setIsUpdating(false)
+      setIsUpdatingPopup(false)
+    }
+  }
+
+  const handleToggleAiChat = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const nextState = !aiChatEnabled
+    setAiChatEnabled(nextState)
+    setIsUpdatingAi(true)
+    try {
+      await toggleAiAssistantSetting(nextState)
+      toast.success(nextState ? 'AI Chat Bot turned ON (visible to users)' : 'AI Chat Bot turned OFF (hidden from users)')
+    } catch (err: any) {
+      setAiChatEnabled(!nextState)
+      toast.error(err.message || 'Failed to update AI Chat Bot setting')
+    } finally {
+      setIsUpdatingAi(false)
     }
   }
 
@@ -56,6 +96,7 @@ export function AdminSidebar({ initialPopupEnabled = false }: { initialPopupEnab
           {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
       </div>
+
       <nav className="flex-1 p-4 space-y-2 flex flex-col overflow-y-auto">
         {navItems.map(item => {
           const Icon = item.icon
@@ -75,65 +116,105 @@ export function AdminSidebar({ initialPopupEnabled = false }: { initialPopupEnab
                 {!isCollapsed && (
                   <div className="flex-1 flex items-center justify-between">
                     <span>{item.label}</span>
-                    {isUsersItem && (
-                      <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ${
-                        popupEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
-                      }`}>
-                        {popupEnabled ? 'ON' : 'OFF'}
-                      </span>
-                    )}
                   </div>
                 )}
               </Link>
 
-              {/* Dynamic Popup Toggle Button right under Users in Sidebar */}
+              {/* Dynamic Feature Toggles under Users in Sidebar */}
               {isUsersItem && (
                 !isCollapsed ? (
-                  <div className="mx-1.5 p-2 rounded-xl bg-violet-50/70 border border-violet-100 flex items-center justify-between gap-2 shadow-2xs">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800">
-                        <Sparkles className="w-3.5 h-3.5 text-violet-600 shrink-0" />
-                        <span className="truncate">Visitor Popup</span>
+                  <div className="space-y-1.5 mt-1">
+                    {/* AI Chat Bot Toggle */}
+                    <div className="mx-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/60 flex items-center justify-between gap-2 shadow-2xs">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800">
+                          <Bot className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span className="truncate">AI Chat Bot</span>
+                        </div>
+                        <span className="text-[10px] text-gray-500 block truncate mt-0.5">
+                          {aiChatEnabled ? '🟢 Visible on store' : '⚪ Hidden'}
+                        </span>
                       </div>
-                      <span className="text-[10px] text-gray-500 block truncate mt-0.5">
-                        {popupEnabled ? '🟢 Appears in 3s' : '⚪ Hidden'}
-                      </span>
+
+                      <button
+                        type="button"
+                        onClick={handleToggleAiChat}
+                        disabled={isUpdatingAi}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          aiChatEnabled ? 'bg-emerald-600' : 'bg-gray-300'
+                        } ${isUpdatingAi ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        title={aiChatEnabled ? 'Click to Turn OFF (Hide Bot from users)' : 'Click to Turn ON (Display Bot to users)'}
+                        aria-label="Toggle AI chat bot on or off"
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                            aiChatEnabled ? 'translate-x-4' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
                     </div>
 
+                    {/* Visitor Login Popup Toggle */}
+                    <div className="mx-1.5 p-2 rounded-xl bg-violet-50/70 border border-violet-100 flex items-center justify-between gap-2 shadow-2xs">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800">
+                          <Sparkles className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                          <span className="truncate">Visitor Popup</span>
+                        </div>
+                        <span className="text-[10px] text-gray-500 block truncate mt-0.5">
+                          {popupEnabled ? '🟢 Appears in 3s' : '⚪ Hidden'}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleTogglePopup}
+                        disabled={isUpdatingPopup}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          popupEnabled ? 'bg-violet-600' : 'bg-gray-300'
+                        } ${isUpdatingPopup ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        title={popupEnabled ? 'Click to Turn OFF (Hide Popup)' : 'Click to Turn ON (Show in 3s)'}
+                        aria-label="Toggle visitor popup on or off"
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                            popupEnabled ? 'translate-x-4' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1 items-center my-1">
+                    <button
+                      type="button"
+                      onClick={handleToggleAiChat}
+                      disabled={isUpdatingAi}
+                      className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer ${
+                        aiChatEnabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                      title={aiChatEnabled ? 'AI Chat Bot: ON (Click to Turn OFF)' : 'AI Chat Bot: OFF (Click to Turn ON)'}
+                    >
+                      <Bot className="w-4 h-4" />
+                    </button>
                     <button
                       type="button"
                       onClick={handleTogglePopup}
-                      disabled={isUpdating}
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        popupEnabled ? 'bg-violet-600' : 'bg-gray-300'
-                      } ${isUpdating ? 'opacity-60 cursor-not-allowed' : ''}`}
-                      title={popupEnabled ? 'Click to Turn OFF (Hide Popup)' : 'Click to Turn ON (Show in 3s)'}
-                      aria-label="Toggle visitor popup on or off"
+                      disabled={isUpdatingPopup}
+                      className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer ${
+                        popupEnabled ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                      title={popupEnabled ? 'Visitor Popup: ON (Click to Turn OFF)' : 'Visitor Popup: OFF (Click to Turn ON)'}
                     >
-                      <span
-                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                          popupEnabled ? 'translate-x-4' : 'translate-x-0'
-                        }`}
-                      />
+                      <Sparkles className="w-4 h-4" />
                     </button>
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleTogglePopup}
-                    disabled={isUpdating}
-                    className={`mx-auto flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer ${
-                      popupEnabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                    }`}
-                    title={popupEnabled ? 'Visitor Popup: ON (Click to Turn OFF)' : 'Visitor Popup: OFF (Click to Turn ON)'}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                  </button>
                 )
               )}
             </div>
           )
         })}
+
         <div className="mt-auto pt-4 border-t">
           <form action={adminLogout}>
             <button 
